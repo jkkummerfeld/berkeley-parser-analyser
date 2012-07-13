@@ -1,0 +1,61 @@
+This repository contains both code from my EMNLP 2012 submission and the more
+recent version of the analysis tool that is currently undr development.
+
+******************************************************************************
+*                                                                            *
+*                            Development version                             *
+*                                                                            *
+******************************************************************************
+
+Since the EMNLP submission I have been investigating alternative ways of doing
+the classification.
+
+For classification use:
+
+   ./dev/transform_search.py <gold> <test> [<output_prefix> stdout by default]
+
+To print trees in a pretty manner consider the following:
+
+Print trees, each on a single line:
+   ./dev/ptb.py <filename>
+
+Print trees with colours to indicate errors (red for extra, blue for missing, yellow for crossing missing)
+   ./dev/ptb.py <gold> <test> [<output_prefix> all to stdout by default]
+
+******************************************************************************
+*                                                                            *
+*                            EMNLP 2012 Submission                           *
+*                                                                            *
+******************************************************************************
+
+To perform a sample run, do:
+
+./emnlp2012/classify.py sample_data/wsj01.mrg sample_data/"PARSER".mrg > out
+
+We recommend viewing like this:
+
+less -x3 out
+
+We suggest this because the output contains colours that are not rendered
+correctly in most text editors.
+
+In the sample_data directory we have included parses for the first ten
+sentences in section 01 of the Penn Treebank.  The files correspond to:
+
+berkeley.mrg - Berkeley Parser
+bikel.mrg - Bikel Parser
+bubs.mrg - BUBS Parser
+charniak_basic.mrg - Charniak Parser, 1-best
+charniak_reranking.mrg - Charniak Parser, with reranker
+charniak_selftrained_basic.mrg - Charniak Parser, with the self-trained model
+charniak_selftrained_reranking.mrg - Charniak Parser, with reranker and
+self-trained model
+collins.1.mrg - Collins Model 1
+collins.2.mrg - Collins Model 2
+collins.3.mrg - Collins Model 3
+henderson.mrg - SSN Parser
+stanford.mrg - Stanford Unlexicalised Parser
+stanford_factored.mrg - Stanford Lexicalised Parser
+
+wsj01.mrg - Gold trees
+wsj01.tok - Just text
