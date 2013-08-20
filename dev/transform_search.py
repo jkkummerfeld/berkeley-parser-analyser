@@ -1,455 +1,190 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# vim: set ts=2 sw=2 noet:
 
 import sys
-import ptb, util
+from nlp_util import pstree, render_tree, init, treebanks, parse_errors, head_finder, tree_transform
+from collections import defaultdict
+from StringIO import StringIO
 
-def value_present(info, fields, values):
-	for field in fields:
-		if field in info:
-			for value in values:
-				if value in info[field]:
-					return True
-	return False
+def get_label(tree):
+	if tree.word is None:
+		return tree.label
+	if tree.label == 'PU':
+		return tree.label + tree.word
+	else:
+		return tree.label
 
-phrase_labels = "S SBAR SBARQ SINV SQ ADJP ADVP CONJP FRAG INTJ LST NAC NP NX PP PRN PRT QP RRC UCP VP WHADJP WHAVP WHNP WHPP X".split()
-seen_movers = set()
-def classify(info):
-	global seen_mmovers
-	if 'mover info' in info:
-		for mover in info['mover info']:
-			if mover in seen_movers:
-				info["double move"] = True
-			seen_movers.add(mover)
-	info['classified_type'] = 'UNSET ' + info['type']
-	if value_present(info, ['type'], ['move']):
-		if 'start left siblings' in info:
-			if len(info['start left siblings']) > 0 and info['start left siblings'][-1] == 'CC':
-				info['classified_type'] = "Co-ordination"
-				return
-		if 'start right siblings' in info:
-			if len(info['start right siblings']) > 0 and info['start right siblings'][0] == 'CC':
-				info['classified_type'] = "Co-ordination"
-				return
-		if 'end left siblings' in info:
-			if len(info['end left siblings']) > 0 and info['end left siblings'][-1] == 'CC':
-				info['classified_type'] = "Co-ordination"
-				return
-		if 'end right siblings' in info:
-			if len(info['end right siblings']) > 0 and info['end right siblings'][0] == 'CC':
-				info['classified_type'] = "Co-ordination"
-				return
-		if 'movers' in info:
-			if len(info['movers']) > 0 and (info['movers'][-1] == 'CC' or info['movers'][0] == 'CC'):
-				info['classified_type'] = "Co-ordination"
-				return
 
-		# multi case info is not actually used, but may be useful
-		multi_case = False
-		if 'movers' in info:
-			if len(info['movers']) > 1:
-				multi_case = True
-				for label in info['movers']:
-					if label not in phrase_labels:
-						multi_case = False
-						break
-		if value_present(info, ['movers'], ['PP']):
-			info['classified_type'] = "PP Attachment"
-			return
-		if value_present(info, ['movers'], ['NP']):
-			info['classified_type'] = "NP Attachment"
-			return
-		if value_present(info, ['movers'], ['VP']):
-			info['classified_type'] = "VP Attachment"
-			return
-		if value_present(info, ['movers'], ['S', 'SINV', 'SBAR']):
-			info['classified_type'] = "Clause Attachment"
-			return
-		if value_present(info, ['movers'], ['RB', 'ADVP', 'ADJP']):
-			info['classified_type'] = "Modifier Attachment"
-			return
+def get_preterminals(tree, ans=None):
+	return_tuple = False
+	if ans is None:
+		ans = []
+		return_tuple = True
+	if tree.is_terminal():
+		ans.append(tree.label)
+	for subtree in tree.subtrees:
+		assert subtree != tree
+		get_preterminals(subtree, ans)
+	if return_tuple:
+		return tuple(ans)
 
-		if value_present(info, ['old_parent'], ['NP', 'QP']):
-			if value_present(info, ['new_parent'], ['NP', 'QP']):
-				info['classified_type'] = "NP Internal Structure"
-				return
 
-	if 'over_word' in info:
-		info['classified_type'] = "Single Word Phrase"
-		return
+def gen_different_label_successor(ctree, span, cur_label, new_label):
+	success, response = tree_transform.change_label(ctree, new_label, span, cur_label, False)
+	assert success, response
 
-	if value_present(info, ['type'], ['relabel']):
-		info['classified_type'] = "Wrong label, right span"
-		return
+	ntree, nnode = response
 
-	if info['type'] == 'add':
-		if 'subtrees' in info and len(info['subtrees']) == 1:
-			if info['subtrees'][0] == info['label']:
-				info['classified_type'] = "XoverX Unary"
-				return
-			info['classified_type'] = "Unary"
-			return
+	info = {
+		'type': 'relabel',
+		'change': (cur_label, new_label),
+		'subtrees': [get_label(subtree) for subtree in nnode.subtrees],
+		'parent': nnode.parent.label,
+		'span': nnode.span,
+		'family': [get_label(subtree) for subtree in nnode.parent.subtrees],
+		'auto preterminals': get_preterminals(nnode),
+		'auto preterminal span': nnode.span,
+		'over_word': len(nnode.subtrees) == 1 and nnode.subtrees[0].word is not None
+	}
 
-	if info['type'] == 'remove':
-		if 'family' in info and len(info['family']) == 1:
-			if info['parent'] == info['label']:
-				info['classified_type'] = "XoverX Unary"
-				return
-			info['classified_type'] = "Unary"
-			return
-		if 'subtrees' in info and len(info['subtrees']) == 1:
-			info['classified_type'] = "Unary"
-			return
+	return (True, ntree, info)
 
-	if value_present(info, ['label'], ['UCP']):
-		info['classified_type'] = "Co-ordination"
-		return
-
-	if 'right siblings' in info:
-		if len(info['right siblings']) > 0 and info['right siblings'][0] == 'CC':
-			info['classified_type'] = "Co-ordination"
-			return
-
-	if 'subtrees' in info and 'PP' in info['subtrees'][1:]:
-		info['classified_type'] = "PP Attachment"
-		return
-
-	if 'subtrees' in info:
-		if 'S' in info['subtrees'][1:]:
-			info['classified_type'] = "Clause Attachment"
-			return
-		if 'SBAR' in info['subtrees'][1:]:
-			info['classified_type'] = "Clause Attachment"
-			return
-		if 'SINV' in info['subtrees'][1:]:
-			info['classified_type'] = "Clause Attachment"
-			return
-	
-	if value_present(info, ['parent'], ['NP']):
-		all_words = True
-		if 'subtrees' in info:
-			# None of the subtrees are internal nodes
-			for label in info['subtrees']:
-				if label in phrase_labels:
-					all_words = False
-					break
-			if all_words:
-				info['classified_type'] = "NP Internal Structure"
-				return
-
-	if value_present(info, ['label'], ['ADVP', 'ADJP']):
-		info['classified_type'] = "Modifier Attachment"
-		return
-
-	if 'subtrees' in info:
-		if 'ADVP' in info['subtrees'][1:] or 'ADJP' in info['subtrees'][1:]:
-			info['classified_type'] = "Modifier Attachment"
-			return
-
-	if 'label' in info:
-		label = info['label']
-		if 'subtrees' in info:
-			all_same = True
-			for slabel in info['subtrees']:
-				if slabel != label:
-					all_same = False
-					break
-			if all_same:
-				if label == 'NP':
-					info['classified_type'] = "NP Internal Structure"
-					return
-				else:
-					info['classified_type'] = "Co-ordination"
-					return
-
-def gen_different_label_successor(ctree, eerror, merror):
-	tree = ctree.clone()
-	info = {'type': 'relabel'}
-	# find the extra span
-	spans = tree.get_spans(eerror[1][0], eerror[1][1])
-	extra_span = None
-	for span in spans:
-		if eerror[2] == span[2].label:
-			extra_span = span[2]
-	assert extra_span is not None
-
-	# relabel
-	extra_span.label = merror[2]
-	info['subtrees'] = [subtree.label for subtree in extra_span.subtrees]
-	info['parent'] = extra_span.parent.label
-	info['span'] = extra_span.span
-	info['family'] = [subtree.label for subtree in extra_span.parent.subtrees]
-	if len(extra_span.subtrees) == 1 and extra_span.subtrees[0].word is not None:
-		info['over_word'] = True
-	return (True, tree, info)
 
 def gen_missing_successor(ctree, error):
-	tree = ctree.clone()
-	info = {'type': 'add'}
-	# find the nodes that should be within this missing span
+	success, response = tree_transform.add_node(ctree, error[1], error[2], in_place=False)
+	assert success, response
 
-	# first, find the spans the have matching start or end
-	starts = tree.get_spans(start=error[1][0])
-	ends = tree.get_spans(end=error[1][1])
+	ntree, nnode = response
+	nnode_index = nnode.parent.subtrees.index(nnode)
 
-	# get the start nodes that are within the missing span, not ROOT, and as large as possible
-	first = None
-	for start in starts:
-		if start[1] <= error[1][1]:
-			if first is None or start[1] > first[1] and start[2].parent is not None:
-				first = start
-	firsts = [start[2] for start in starts if start[1] == first[1] and start[2].parent is not None]
+	info = {
+		'type': 'add',
+		'label': get_label(nnode),
+		'span': nnode.span,
+		'subtrees': [get_label(subtree) for subtree in nnode.subtrees],
+		'parent': nnode.parent.label,
+		'family': [get_label(subtree) for subtree in nnode.parent.subtrees],
+		'auto preterminals': get_preterminals(nnode),
+		'auto preterminal span': nnode.span,
+		'left siblings': nnode.parent.subtrees[:nnode_index],
+		'right siblings': nnode.parent.subtrees[nnode_index + 1:],
+		'over_word': len(nnode.subtrees) == 1 and nnode.subtrees[0].is_terminal(),
+		'over words': reduce(lambda prev, node: prev and node.is_terminal(), nnode.subtrees, True),
+	}
 
-	# get the end nodes that are within the missing span, not ROOT, and as large as possible
-	last = None
-	for end in ends:
-		if end[0] >= error[1][0]:
-			if last is None or end[0] < last[0] and end[2].parent is not None:
-				last = end
-	lasts = [end[2] for end in ends if end[0] == last[0] and end[2].parent is not None]
+	return (True, ntree, info)
 
-	# find a pair that are within the same node
-	match = None
-	for first in firsts:
-		for last in lasts:
-			if first.parent == last.parent:
-				match = (first, last)
-				break
-	assert match is not None
 
-	# create the missing bracket
-	first, last = match
-	parent = last.parent
-	nnode = ptb.PTB_Tree()
-	nnode.span = (error[1][0], error[1][1])
-	nnode.label = error[2]
-	nnode.parent = parent
-	# move the subtrees
-	for i in xrange(len(parent.subtrees)):
-		if parent.subtrees[i] == first:
-			while parent.subtrees[i] != last:
-				nnode.subtrees.append(parent.subtrees.pop(i))
-				nnode.subtrees[-1].parent = nnode
-			nnode.subtrees.append(parent.subtrees.pop(i))
-			nnode.subtrees[-1].parent = nnode
-			parent.subtrees.insert(i, nnode)
-			break
-	info['label'] = nnode.label
-	info['span'] = nnode.span
-	info['subtrees'] = [subtree.label for subtree in nnode.subtrees]
-	info['parent'] = nnode.parent.label
-	info['family'] = [subtree.label for subtree in nnode.parent.subtrees]
-	if len(nnode.subtrees) == 1 and nnode.subtrees[0].word is not None:
-		info['over_word'] = True
-	info['left siblings'] = []
-	info['right siblings'] = []
-	cur = []
-	for span in nnode.parent.subtrees:
-		if span == nnode:
-			info['left siblings'] = cur
-			cur = []
-		else:
-			cur.append(span.label)
-	info['right siblings'] = cur
-	return (True, tree, info)
+def gen_extra_successor(ctree, error, gold):
+	success, response = tree_transform.remove_node(ctree, error[1], error[2], in_place=False)
+	assert success, response
 
-def gen_extra_successor(ctree, error):
-	tree = ctree.clone()
-	info = {'type': 'remove'}
-	# find the extra span
-	spans = tree.get_spans(error[1][0], error[1][1])
-	extra_span = None
-	for span in spans:
-		if error[2] == span[2].label:
-			extra_span = span[2]
-	assert extra_span is not None
-	info['label'] = error[2]
-	info['span'] = error[1]
-	info['subtrees'] = [subtree.label for subtree in extra_span.subtrees]
-	info['parent'] = extra_span.parent.label
-	info['family'] = [subtree.label for subtree in extra_span.parent.subtrees]
-	info['left siblings'] = []
-	info['right siblings'] = []
-	cur = []
-	for span in extra_span.parent.subtrees:
-		if span == extra_span:
-			info['left siblings'] = cur
-			cur = []
-		else:
-			cur.append(span.label)
-	info['right siblings'] = cur
+	parent, dnode, spos, epos  = response
+	ntree = parent.root()
 
-	# remove the span
-	parent = extra_span.parent
-	for i in xrange(len(parent.subtrees)):
-		if parent.subtrees[i] == extra_span:
-			parent.subtrees.pop(i)
-			for subtree in extra_span.subtrees[::-1]:
-				subtree.parent = parent
-				parent.subtrees.insert(i, subtree)
-			break
-	if len(extra_span.subtrees) == 1 and extra_span.subtrees[0].word is not None:
-		info['over_word'] = True
-	return (True, tree, info)
+	info = {
+		'type': 'remove',
+		'label': get_label(dnode),
+		'span': dnode.span,
+		'subtrees': [get_label(subtree) for subtree in dnode.subtrees],
+		'parent': parent.label,
+		'family': [get_label(subtree) for subtree in parent.subtrees[:spos] + [dnode] + parent.subtrees[epos:]],
+		'left siblings': [get_label(subtree) for subtree in parent.subtrees[:spos]],
+		'right siblings': [get_label(subtree) for subtree in parent.subtrees[epos:]],
+		'over words': reduce(lambda prev, node: prev and node.is_terminal(), dnode.subtrees, True),
+		'over_word': len(dnode.subtrees) == 1 and dnode.subtrees[0].is_terminal(),
+		'auto preterminals': get_preterminals(parent),
+		'auto preterminal span': parent.span
+	}
 
-def gen_move_successors(pos, starting, ctree, source_span, left, right, cerrors):
-	new_sibling = None
-	if starting:
-		new_sibling = ctree.get_lowest_span(start=pos, end=pos+1)
-	else:
-		new_sibling = ctree.get_lowest_span(start=pos-1, end=pos)
-	steps = 0
-	# if pos == left, then only consider moving up
-	left_pos = source_span.subtrees[left].span[0]
-	if starting and pos == left_pos:
-		while new_sibling != source_span:
-			new_sibling = new_sibling.parent
-			steps += 1
-	# if pos == right, then only consider moving up
-	right_pos = source_span.subtrees[right].span[1]
-	if (not starting) and pos == right_pos:
-		while new_sibling != source_span:
-			new_sibling = new_sibling.parent
-			steps += 1
-	while new_sibling is not None:
-		if new_sibling.parent is None:
-			break
-		if new_sibling.parent == source_span:
-			break
-		# Clone the tree and find the equivalent locations
-		tree = ctree.clone()
-		info = {'type': 'move'}
-		spans = tree.get_spans(source_span.span[0], source_span.span[1])
-		old_parent = None
-		for span in spans:
-			if source_span.label == span[2].label:
-				if len(span[2].subtrees) == len(source_span.subtrees):
-					old_parent = span[2]
-		new_parent = None
-		if starting:
-			new_parent = tree.get_lowest_span(start=pos, end=pos+1)
-		else:
-			new_parent = tree.get_lowest_span(start=pos-1, end=pos)
-		for i in xrange(steps + 1):
-			new_parent = new_parent.parent
-		assert new_parent is not None and old_parent is not None
+	if len(info['right siblings']) == 1:
+		sibling = parent.subtrees[-1]
+		for node in sibling:
+			if node.word is not None:
+				gold_eq = gold.get_nodes('lowest', node.span[0], node.span[1])
+				if gold_eq is not None:
+					if get_label(node) != gold_eq.label:
+						info['POS confusion'] = (get_label(node), get_label(gold_eq))
 
-		# Only move in to things that are extra (we don't want to create errors)
-		use = False
-		if cerrors.is_extra(new_parent):
-			use = True
-		else:
-			if starting:
-				if left == 0 and pos == left_pos:
-					use = True
-			else:
-				if right == len(source_span.subtrees) - 1 and pos == right_pos:
-					use = True
+	return (True, ntree, info)
 
-		if use:
-			info['old_parent'] = old_parent.label
-			info['new_parent'] = new_parent.label
-			info['movers'] = []
-			info['mover info'] = []
-			info['new_family'] = [subtree.label for subtree in new_parent.subtrees]
-			info['start left siblings'] = [node.label for node in old_parent.subtrees[:left]]
-			info['start right siblings'] = [node.label for node in old_parent.subtrees[right+1:]]
 
-			# Move [left, right] from old_parent to new_parent
-			insertion_point = 0
-			for subtree in new_parent.subtrees:
-				if subtree.span[0] >= old_parent.subtrees[left].span[0]:
-					break
-				insertion_point += 1
-			info['end left siblings'] = [node.label for node in new_parent.subtrees[:insertion_point]]
-			info['end right siblings'] = [node.label for node in new_parent.subtrees[insertion_point:]]
-			moved = set()
-			for i in xrange(left, right + 1):
-				mover = old_parent.subtrees.pop(left)
-				moved.add(mover)
-				new_parent.subtrees.insert(insertion_point, mover)
-				mover.parent = new_parent
-				insertion_point += 1
-				info['movers'].append(mover.label)
-				info['mover info'].append((mover.label, mover.span))
-			info['old_family'] = [subtree.label for subtree in old_parent.subtrees]
-			if len(old_parent.subtrees) == 0:
-				while len(old_parent.subtrees) == 0 and old_parent.parent is not None:
-					old_parent.parent.subtrees.remove(old_parent)
-					old_parent = old_parent.parent
-			if len(old_parent.subtrees) == 1:
-				if old_parent.label == old_parent.subtrees[0].label:
-					if new_parent == old_parent.subtrees[0]:
-						new_parent = old_parent
-					old_parent.subtrees = old_parent.subtrees[0].subtrees
-					for subtree in old_parent.subtrees:
-						subtree.parent = old_parent
-			tree.calculate_spans()
+def gen_move_successor(source_span, left, right, new_parent, cerrors, gold):
+	success, response = tree_transform.move_nodes(source_span.subtrees[left:right+1], new_parent, False)
+	assert success, response
+
+	ntree, nodes, new_parent = response
+	new_left = new_parent.subtrees.index(nodes[0])
+	new_right = new_parent.subtrees.index(nodes[-1])
+
+	# Find Lowest Common Ancestor of the new and old parents
+	full_span = (min(source_span.span[0], new_parent.span[0]), max(source_span.span[1], new_parent.span[1]))
+	lca = new_parent
+	while not (lca.span[0] <= full_span[0] and full_span[1] <= lca.span[1]):
+		lca = lca.parent
+
+	info = {
+		'type': 'move',
+		'old_parent': get_label(source_span),
+		'new_parent': get_label(new_parent),
+		'movers': [get_label(node) for node in nodes],
+		'mover info': [(get_label(node), node.span) for node in nodes],
+		'new_family': [get_label(subtree) for subtree in new_parent.subtrees],
+		'old_family': [get_label(subtree) for subtree in source_span.subtrees],
+		'start left siblings': [get_label(node) for node in source_span.subtrees[:left]],
+		'start right siblings': [get_label(node) for node in source_span.subtrees[right+1:]],
+		'end left siblings': [get_label(node) for node in new_parent.subtrees[:new_left]],
+		'end right siblings': [get_label(node) for node in new_parent.subtrees[new_right+1:]],
+		'auto preterminals': get_preterminals(lca),
+		'auto preterminal span': lca.span
+	}
+
+	if left == right and nodes[-1].span[1] - nodes[-1].span[0] == 1:
+		preterminal = nodes[-1]
+		while preterminal.word is None:
+			preterminal = preterminal.subtrees[0]
+		gold_eq = gold.get_nodes('lowest', preterminal.span[0], preterminal.span[1])
+		if gold_eq is not None:
+			info['POS confusion'] = (get_label(preterminal), get_label(gold_eq))
+
+	# Consider fixing a missing node in the new location as well
+	nerrors = parse_errors.Parse_Error_Set(gold, ntree)
+	to_fix = None
+	for error in nerrors.missing:
+		if error[1][0] <= nodes[0].span[0] and nodes[-1].span[1] <= error[1][1]:
+			if error[1] == (nodes[0].span[0], nodes[-1].span[1]):
+				continue
+			if error[1][0] < new_parent.span[0] or error[1][1] > new_parent.span[1]:
+				continue
+			if to_fix is None or to_fix[1][0] < error[1][0] or error[1][1] < to_fix[1][1]:
+				to_fix = error
+	if to_fix is not None:
+		info['added and moved'] = True
+		info['added label'] = error[2]
+
+		unmoved = []
+		for node in new_parent.subtrees:
+			if to_fix[1][0] < node.span[0] and node.span[1] < to_fix[1][1]:
+				if node not in nodes:
+					unmoved.append(node)
+		info['adding node already present'] = False
+		if len(unmoved) == 1 and unmoved[0].label == to_fix[2]:
+			info['adding node already present'] = True
+
+		success, response = tree_transform.add_node(ntree, to_fix[1], to_fix[2], in_place=False)
+		assert success, response
+		ntree, nnode = response
+
+	return (False, ntree, info)
 			
-			# if the thing(s) that moved and one other thing should all be under a
-			# bracket that is missing, and this would not create a unary, add it
-			nspan = None
-			move_span = [1000, -1]
-			for node in moved:
-				if node.span[0] < move_span[0]:
-					move_span[0] = node.span[0]
-				if node.span[1] > move_span[1]:
-					move_span[1] = node.span[1]
-			cur = None
-			movers_seen = False
-			for node in new_parent.subtrees:
-				if node not in moved:
-					cur = node
-					if movers_seen:
-						nspan = (move_span[0], cur.span[1])
-						break
-				else:
-					movers_seen = True
-					if cur is not None:
-						nspan = (cur.span[0], move_span[1])
-						break
-			to_fix = []
-			for error in cerrors.missing + cerrors.crossing:
-				if error[1] == nspan and error[0] != 'extra':
-					to_fix.append(error)
-			nnode = ptb.PTB_Tree()
-			if len(to_fix) == 1:
-				info['added and moved'] = True
-				error = to_fix[0]
-				first, last = None, None
-				for node in new_parent.subtrees:
-					if node.span[0] == nspan[0]:
-						first = node
-					if node.span[1] == nspan[1]:
-						last = node
-				if first is not None and last is not None:
-					nnode.span = (error[1][0], error[1][1])
-					nnode.label = error[2]
-					nnode.parent = new_parent
-					# move the subtrees
-					for i in xrange(len(new_parent.subtrees)):
-						if new_parent.subtrees[i] == first:
-							while new_parent.subtrees[i] != last:
-								mover = new_parent.subtrees.pop(i)
-								nnode.subtrees.append(mover)
-								mover.parent = nnode
-							mover = new_parent.subtrees.pop(i)
-							nnode.subtrees.append(mover)
-							mover.parent = nnode
-							new_parent.subtrees.insert(i, nnode)
-							nnode.parent = new_parent
-							break
-
-			# return the modified tree
-			yield (False, tree, info)
-		new_sibling = new_sibling.parent
-		steps += 1
 
 def successors(ctree, cerrors, gold):
 	# Change the label of a node
 	for merror in cerrors.missing:
 		for eerror in cerrors.extra:
 			if merror[1] == eerror[1]:
-				yield gen_different_label_successor(ctree, eerror, merror)
+				yield gen_different_label_successor(ctree, eerror[1], eerror[2], merror[2])
 
 	# Add a node
 	for error in cerrors.missing:
@@ -457,51 +192,58 @@ def successors(ctree, cerrors, gold):
 
 	# Remove a node
 	for error in cerrors.extra:
-		yield gen_extra_successor(ctree, error)
+		yield gen_extra_successor(ctree, error, gold)
 
 	# Move nodes
-	spans = ctree.get_spans()
-	for source_span in spans:
+	for source_span in ctree:
 		# Consider all continuous sets of children
-		source_span = source_span[2]
 		for left in xrange(len(source_span.subtrees)):
 			for right in xrange(left, len(source_span.subtrees)):
 				if left == 0 and right == len(source_span.subtrees) - 1:
 					continue
-				# If this series of nodes does not span the entire set of children
-				if left != 0:
-					# Consider moving down within this bracket
-					pos = source_span.subtrees[left].span[0]
-					for ans in gen_move_successors(pos, False, ctree, source_span, left, right, cerrors):
-						yield ans
-				if right != len(source_span.subtrees) - 1:
-					# Consider moving down within this bracket
-					pos = source_span.subtrees[right].span[1]
-					for ans in gen_move_successors(pos, True, ctree, source_span, left, right, cerrors):
-						yield ans
-		
-				# If source_span is extra
-				if cerrors.is_extra(source_span):
-					if left == 0:
-						# Consider moving this set out to the left
-						pos = source_span.subtrees[left].span[0]
-						if pos > 0:
-							for ans in gen_move_successors(pos, False, ctree, source_span, left, right, cerrors):
-								yield ans
-						# Consider moving this set of spans up
-						for ans in gen_move_successors(pos, True, ctree, source_span, left, right, cerrors):
-							yield ans
-					elif right == len(source_span.subtrees) - 1:
-						# Consider moving this set out to the right
-						pos = source_span.subtrees[right].span[1]
-						if pos < ctree.span[1]:
-							for ans in gen_move_successors(pos, True, ctree, source_span, left, right, cerrors):
-								yield ans
-						# Consider moving this set of spans up
-						for ans in gen_move_successors(pos, False, ctree, source_span, left, right, cerrors):
-							yield ans
+				new_parents = []
 
-def greedy_search(gold, test):
+				# Consider moving down within this bracket
+				if left != 0:
+					new_parent = source_span.subtrees[left-1]
+					while not new_parent.is_terminal():
+						if cerrors.is_extra(new_parent):
+							new_parents.append(new_parent)
+						new_parent = new_parent.subtrees[-1]
+				if right != len(source_span.subtrees) - 1:
+					new_parent = source_span.subtrees[right+1]
+					while not new_parent.is_terminal():
+						if cerrors.is_extra(new_parent):
+							new_parents.append(new_parent)
+						new_parent = new_parent.subtrees[0]
+
+				# If source_span is extra
+				if cerrors.is_extra(source_span) and (left == 0 or right == len(source_span.subtrees) - 1):
+					# Consider moving this set out to the left
+					if left == 0:
+						if source_span.subtrees[left].span[0] > 0:
+							for new_parent in ctree.get_nodes('all', end=source_span.subtrees[left].span[0]):
+								if cerrors.is_extra(new_parent):
+									new_parents.append(new_parent)
+
+					# Consider moving this set out to the right
+					if right == len(source_span.subtrees) - 1:
+						if source_span.subtrees[right].span[1] < ctree.span[1]:
+							for new_parent in ctree.get_nodes('all', start=source_span.subtrees[right].span[1]):
+								if cerrors.is_extra(new_parent):
+									new_parents.append(new_parent)
+
+					# Consider moving this set of spans up
+					new_parent = source_span.parent
+					while not (new_parent.parent is None):
+						new_parents.append(new_parent)
+						new_parent = new_parent.parent
+
+				for new_parent in new_parents:
+					yield gen_move_successor(source_span, left, right, new_parent, cerrors, gold)
+
+
+def greedy_search(gold, test, classify):
 	# Initialise with the test tree
 	cur = (test.clone(), {'type': 'init'}, 0)
 
@@ -514,7 +256,7 @@ def greedy_search(gold, test):
 			return (0, iters), None
 		# Check for victory
 		ctree = cur[0]
-		cerrors = ctree.get_errors(gold)
+		cerrors = parse_errors.Parse_Error_Set(gold, ctree)
 		if len(cerrors) == 0:
 			final = cur
 			break
@@ -522,10 +264,8 @@ def greedy_search(gold, test):
 		best = None
 		for fixes, ntree, info in successors(ctree, cerrors, gold):
 			if not ntree.check_consistency():
-				print "Inconsistent tree!"
-				print ntree
-				sys.exit(0)
-			nerrors = ntree.get_errors(gold)
+				raise Exception("Inconsistent tree! {}".format(ntree))
+			nerrors = parse_errors.get_errors(ntree, gold)
 			change = len(cerrors) - len(nerrors)
 			if change < 0:
 				continue
@@ -534,129 +274,148 @@ def greedy_search(gold, test):
 		cur = best
 		iters += 1
 	
-	global seen_movers
-	seen_movers = set()
 	for step in path:
-		classify(step[1])
+		classify(step[1], gold, test)
 	
 	return (0, iters), path
 
 
-#####################################################################
-#
-# Main (and related functions)
-#
-#####################################################################
+def compare_trees(gold_tree, test_tree, out_dict, error_counts, classify):
+	""" Compares two trees. """
+	init_errors = parse_errors.get_errors(test_tree, gold_tree)
+	error_count = len(init_errors)
+	print >> out_dict['out'], "{} Initial errors".format(error_count)
+	iters, path = greedy_search(gold_tree, test_tree, classify)
+	print >> out_dict['out'], "{} on fringe, {} iterations".format(*iters)
+	if path is not None:
+		print >> out_dict['test_trees'], test_tree
+		print >> out_dict['gold_trees'], gold_tree
+		for tree in path[1:]:
+			print >> out_dict['out'], "{} Error:{}".format(str(tree[2]),tree[1]['classified_type'])
 
-def mprint(text, out_dict, out_name):
-	if 'all' in out_name:
-		for key in out_dict:
-			print >> out_dict[key], text
+		if len(path) > 1:
+			for tree in path:
+				print >> out_dict['out'], "Step:{}".format(tree[1]['classified_type'])
+				error_counts[tree[1]['classified_type']].append(tree[2])
+				print >> out_dict['out'], tree[1]
+				print >> out_dict['out'], render_tree.text_coloured_errors(tree[0], gold=gold_tree).strip()
 	else:
-		if type(out_name) != type([]):
-			out_name = [out_name]
-		for name in out_name:
-			print >> out_dict[name], text
+		print >> out_dict['out'], "no path found"
+	print >> out_dict['err'], ""
+	print >> out_dict['out'], ""
 
-if __name__ == '__main__':
-	if len(sys.argv) < 3:
-		print "Usage:"
-		print "   %s <gold> <test> [<output_prefix> stdout by default]" % sys.argv[0]
-		print "Running doctest"
-		import doctest
-		doctest.testmod()
-		sys.exit(0)
 
+def read_tree(text, out_dict, label):
+	fake_file = StringIO(text)
+	complete_tree = treebanks.ptb_read_tree(fake_file)
+	if complete_tree is None:
+		return None
+	treebanks.homogenise_tree(complete_tree)
+	if not complete_tree.label.strip():
+		complete_tree.label = 'ROOT'
+	tree = treebanks.apply_collins_rules(complete_tree)
+	if tree is None:
+		for out in [out_dict['out'], out_dict['err']]:
+			print >> out, "Empty {} tree".format(label)
+			print >> out, complete_tree
+			print >> out, tree
+	return tree
+
+
+def compare(gold_text, test_text, out_dict, error_counts, classify):
+	""" Compares two trees in text form.
+	This checks for empty trees and mismatched numbers
+	of words.
+	"""
+	gold_text = gold_text.strip()
+	test_text = test_text.strip()
+	if len(gold_text) == 0:
+		print >> out_dict['out'], "No gold tree"
+		print >> out_dict['err'], "No gold tree"
+		return
+	elif len(test_text) == 0:
+		print >> out_dict['out'], "Not parsed"
+		print >> out_dict['err'], "Not parsed"
+		return
+	gold_tree = read_tree(gold_text, out_dict, 'gold')
+	test_tree = read_tree(test_text, out_dict, 'test')
+	if gold_tree is None or test_tree is None:
+		print >> out_dict['out'], "Not parsed, but had output"
+		print >> out_dict['err'], "Not parsed, but had output"
+		print >> out_dict['init_errors'], "Not parsed, but had output"
+		return
+	print >> out_dict['init_errors'], render_tree.text_coloured_errors(test_tree, gold_tree).strip()
+
+	gold_words = gold_tree.word_yield()
+	test_words = test_tree.word_yield()
+	if len(test_words.split()) != len(gold_words.split()):
+		for out in [out_dict['out'], out_dict['err']]:
+			print >> out, "Sentence lengths do not match..."
+			print >> out, "Gold: " + gold_words
+			print >> out, "Test: " + test_words
+		return
+
+	compare_trees(gold_tree, test_tree, out_dict, error_counts, classify)
+
+
+def main(args, classify):
+	init.argcheck(args, 4, 4, 'Identify errors in parser output', '<gold> <test> <prefix_for_output_files>')
+
+	# Output setup
 	out_dict = {
 		'out': sys.stdout,
-		'summary': sys.stderr,
 		'err': sys.stderr,
 		'gold_trees': sys.stdout,
-		'test_trees': sys.stdout
+		'test_trees': sys.stdout,
+		'error_counts': sys.stdout
 	}
-	if len(sys.argv) == 4:
-		out_dict['out'] = open(sys.argv[3] + '.out', 'w')
-		out_dict['err'] = open(sys.argv[3] + '.log', 'w')
-		out_dict['summary'] = open(sys.argv[3] + '.summary', 'w')
-		out_dict['gold_trees'] = open(sys.argv[3] + '.gold_trees', 'w')
-		out_dict['test_trees'] = open(sys.argv[3] + '.test_trees', 'w')
+	prefix = args[3]
+	out_dict['out'] = open(prefix + '.out', 'w')
+	out_dict['err'] = open(prefix + '.log', 'w')
+	out_dict['gold_trees'] = open(prefix + '.gold_trees', 'w')
+	out_dict['test_trees'] = open(prefix + '.test_trees', 'w')
+	out_dict['error_counts'] = open(prefix + '.error_counts', 'w')
+	out_dict['init_errors'] = open(prefix + '.init_errors', 'w')
+	init.header(args, out_dict.values())
 
-	mprint("Printing tree transformations", out_dict, ['out', 'err'])
-	gold_in = open(sys.argv[1])
-	test_in = open(sys.argv[2])
+	# Classification
+	print >> out_dict['out'], "Printing tree transformations"
+	print >> out_dict['err'], "Printing tree transformations"
+	gold_in = open(args[1])
+	test_in = sys.stdin if args[2] == '-' else open(args[2])
 	sent_no = 0
+	error_counts = defaultdict(lambda: [])
 	while True:
 		sent_no += 1
 		gold_text = gold_in.readline()
 		test_text = test_in.readline()
 		if gold_text == '' and test_text == '':
-			mprint("End of both input files", out_dict, 'err')
+			print >> out_dict['err'], "End of both input files"
 			break
 		elif gold_text == '':
-			mprint("End of gold input", out_dict, 'err')
+			print >> out_dict['err'], "End of gold input"
 			break
 		elif test_text == '':
-			mprint("End of test input", out_dict, 'err')
+			print >> out_dict['err'], "End of test input"
 			break
 
-		mprint("Sentence %d:" % sent_no, out_dict, ['out', 'err','summary'])
+		print >> out_dict['out'], "Sentence {}:".format(sent_no)
+		print >> out_dict['err'], "Sentence {}:".format(sent_no)
+		print >> out_dict['init_errors'], "Sentence {}:".format(sent_no)
+		compare(gold_text.strip(), test_text.strip(), out_dict, error_counts, classify)
+		print >> out_dict['init_errors'], "\n"
 
-		gold_text = gold_text.strip()
-		test_text = test_text.strip()
-		if len(gold_text) == 0:
-			mprint("No gold tree", out_dict, ['out', 'err','summary'])
+	# Results
+	counts_to_print = []
+	for error in error_counts:
+		if error == 'UNSET init':
 			continue
-		elif len(test_text) == 0:
-			mprint("Not parsed", out_dict, ['out', 'err','summary'])
-			continue
+		counts_to_print.append((len(error_counts[error]), sum(error_counts[error]), error))
+	counts_to_print.sort(reverse=True)
+	for error in counts_to_print:
+		print >> out_dict['error_counts'], "{} {} {}".format(*error)
 
-		gold_complete_tree = ptb.PTB_Tree()
-		gold_complete_tree.set_by_text(gold_text)
-		gold_notrace_tree = ptb.remove_traces(gold_complete_tree)
-		gold_nofunc_tree = ptb.remove_function_tags(gold_notrace_tree)
-		gold_tree = ptb.apply_collins_rules(gold_complete_tree)
-		if gold_tree is None:
-			mprint("Empty gold tree", out_dict, ['out', 'err','summary'])
-			mprint(gold_complete_tree.__repr__(), out_dict, ['out', 'err'])
-			mprint(gold_tree.__repr__(), out_dict, ['out', 'err'])
-			continue
 
-		test_complete_tree = ptb.PTB_Tree()
-		test_complete_tree.set_by_text(test_text)
-		test_notrace_tree = ptb.remove_traces(test_complete_tree)
-		test_nofunc_tree = ptb.remove_function_tags(test_notrace_tree)
-		test_tree = ptb.apply_collins_rules(test_complete_tree)
-		if test_tree is None:
-			mprint("Empty test tree", out_dict, ['out', 'err','summary'])
-			mprint(test_complete_tree.__repr__(), out_dict, ['out', 'err'])
-			mprint(test_tree.__repr__(), out_dict, ['out', 'err'])
-			continue
-
-		gold_words = gold_tree.word_yield()
-		test_words = test_tree.word_yield()
-		if len(test_words.split()) != len(gold_words.split()):
-			mprint("Sentence lengths do not match...", out_dict, ['out', 'err','summary'])
-			mprint("Gold: " + gold_words.__repr__(), out_dict, ['out', 'err'])
-			mprint("Test: " + test_words.__repr__(), out_dict, ['out', 'err'])
-
-		init_errors = test_tree.get_errors(gold_tree)
-		error_count = len(init_errors)
-		mprint("%d Initial errors" % error_count, out_dict, 'out')
-		iters, path = greedy_search(gold_tree, test_tree)
-		mprint("%d on fringe, %d iterations" % iters, out_dict, 'out')
-		if path is not None:
-			mprint(test_tree.__repr__(), out_dict, 'test_trees')
-			mprint(gold_tree.__repr__(), out_dict, 'gold_trees')
-			for tree in path[1:]:
-				mprint(str(tree[2]) + " Error:" + tree[1]['classified_type'], out_dict, ['out','summary'])
-
-			if len(path) > 1:
-				for tree in path:
-					mprint("Step:" + tree[1]['classified_type'], out_dict, 'out')
-					mprint(tree[1].__repr__(), out_dict, 'out')
-					mprint(tree[0].colour_repr(gold=gold_tree).strip(), out_dict, 'out')
-		else:
-			mprint("no path found", out_dict, 'out')
-
-		mprint("", out_dict, ['out', 'err','summary'])
-
+if __name__ == '__main__':
+	from classify_english import classify
+	main(sys.argv, classify)
