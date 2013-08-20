@@ -1,61 +1,126 @@
-This repository contains both code from my EMNLP 2012 submission and the more
-recent version of the analysis tool that is currently undr development.
+Berkeley Parser Analyser
 
-******************************************************************************
-*                                                                            *
-*                            Development version                             *
-*                                                                            *
-******************************************************************************
 
-Since the EMNLP submission I have been investigating alternative ways of doing
-the classification.
+This software classifies mistakes in the output of parsers.  For a full
+description of the method, and discussion of results when applied to a range of
+well known parsers, see:
 
-For classification use:
+   Parser Showdown at the Wall Street Corral: An Empirical Investigation of Error Types in Parser Output 
+   Jonathan K. Kummerfeld, David Hall, James R. Curran, and Dan Klein 
+   EMNLP 2012
 
-   ./dev/transform_search.py <gold> <test> [<output_prefix> stdout by default]
+   An Empirical Examination of Challenges in Chinese Parsing
+   Jonathan K. Kummerfeld, Daniel Tse, James R. Curran, and Dan Klein
+   ACL (short) 2013
 
-To print trees in a pretty manner consider the following:
+If you use my code in your own work, please cite the following papers (for
+English and Chinese respectively):
 
-Print trees, each on a single line:
-   ./dev/ptb.py <filename>
+@InProceedings{Kummerfeld-etal:2012:EMNLP,
+  author    = {Jonathan K. Kummerfeld and David Hall and James R. Curran and Dan Klein},
+  title     = {Parser Showdown at the Wall Street Corral: An Empirical Investigation of Error Types in Parser Output},
+  booktitle = {Proceedings of EMNLP},
+  address   = {Jeju Island, South Korea},
+  month     = {July},
+  year      = {2012},
+  pages     = {1048--1059},
+  software  = {http://code.google.com/p/berkeley-parser-analyser/},
+}
 
-Print trees with colours to indicate errors (red for extra, blue for missing, yellow for crossing missing)
-   ./dev/ptb.py <gold> <test> [<output_prefix> all to stdout by default]
+@InProceedings{Kummerfeld-etal:2013:ACL,
+  author    = {Jonathan K. Kummerfeld and Daniel Tse and James R. Curran and Dan Klein},
+  title     = {An Empirical Examination of Challenges in Chinese Parsing},
+  booktitle = {Proceedings of ACL},
+  address   = {Sofia, Bulgaria},
+  month     = {August},
+  year      = {2013},
+  pages     = {98--103},
+  software  = {http://code.google.com/p/berkeley-parser-analyser/},
+}
 
-******************************************************************************
-*                                                                            *
-*                            EMNLP 2012 Submission                           *
-*                                                                            *
-******************************************************************************
 
-To perform a sample run, do:
 
-./emnlp2012/classify.py sample_data/wsj01.mrg sample_data/"PARSER".mrg > out
+------------------------------------------------------------------------------
+  Running the System
+------------------------------------------------------------------------------
 
-We recommend viewing like this:
+There are four main programs:
 
-less -x3 out
+   classify_english.py
+     Classify errors in English output
+   classify_chinese.py
+     Classify errors in Chinese output
+   print_coloured_errors.py
+     Print errors using colour in a plain text format (red for extra brackets,
+     blue for missing brackets, yellow for crossing brackets, and white for
+     correct brackets)
+   reprint_trees.py
+     Reprint a set of trees in a different format (e.g. single line or
+     multiline, plain text or latex), edits such as removing traces can also be
+     applied
 
-We suggest this because the output contains colours that are not rendered
-correctly in most text editors.
+Running each with no arguments will provide help information.  Also see the
+sample folders for example runs.  These were generated as follows:
 
-In the sample_data directory we have included parses for the first ten
-sentences in section 01 of the Penn Treebank.  The files correspond to:
+English:
+./src/classify_english.py sample_input/english.gold sample_input/english.berkeley sample_output/classified.english.berkeley
 
-berkeley.mrg - Berkeley Parser
-bikel.mrg - Bikel Parser
-bubs.mrg - BUBS Parser
-charniak_basic.mrg - Charniak Parser, 1-best
-charniak_reranking.mrg - Charniak Parser, with reranker
-charniak_selftrained_basic.mrg - Charniak Parser, with the self-trained model
-charniak_selftrained_reranking.mrg - Charniak Parser, with reranker and
-self-trained model
-collins.1.mrg - Collins Model 1
-collins.2.mrg - Collins Model 2
-collins.3.mrg - Collins Model 3
-henderson.mrg - SSN Parser
-stanford.mrg - Stanford Unlexicalised Parser
-stanford_factored.mrg - Stanford Lexicalised Parser
+Chinese:
+./src/classify_chinese.py sample_input/chinese.gold sample_input/chinese.berkeley sample_output/classified.chinese.berkeley
 
-wsj01.mrg - Gold trees
-wsj01.tok - Just text
+Coloured errors:
+./nlp_util/tools/print_coloured_errors.py sample_input/english.gold sample_input/english.berkeley sample_output/coloured_errors.english.berkeley
+
+
+For the error analysis runs the files produced are:
+
+classified.berkeley.error_counts  -  The errors, their occurence, and the number of
+brackets attributed to them (frequency first, then number of brackets
+attributed)
+
+classified.berkeley.init_errors  -  A pretty-print presentation of the initial
+errors (red indicates extra spans, blue indicates missing spans, and yellow
+are missing spans that cross current spans)
+
+classified.berkeley.out  -  The complete output of the classification, including
+each step in each path
+
+Log information:
+classified.berkeley.log  -  A log of system notes
+classified.berkeley.test_trees  -  The test trees
+classified.berkeley.gold_trees  -  The gold trees
+
+
+For the coloured output we recommend viewing files like so:
+
+less -x3 <filename>
+
+That way the trees don't get too wide.
+
+------------------------------------------------------------------------------
+  Questions?
+------------------------------------------------------------------------------
+
+Contact me!
+
+[my initials] @berkeley.edu 
+Where my initials are 'jkk'
+
+Also check for updates to the code at:
+
+https://code.google.com/p/berkeley-parser-analyser/
+
+
+
+
+
+Copyright (c) 2013, Jonathan K. Kummerfeld
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+- Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+- Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+- Neither the name of the University of California, Berkeley nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
