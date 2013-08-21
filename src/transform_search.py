@@ -200,6 +200,8 @@ def successors(ctree, cerrors, gold):
 		for left in xrange(len(source_span.subtrees)):
 			for right in xrange(left, len(source_span.subtrees)):
 				if left == 0 and right == len(source_span.subtrees) - 1:
+					# Note, this means in cases like (NP (NN blah)) we can't move the NN
+					# out, we have to move the NP level.
 					continue
 				new_parents = []
 
@@ -234,10 +236,22 @@ def successors(ctree, cerrors, gold):
 									new_parents.append(new_parent)
 
 					# Consider moving this set of spans up
-					new_parent = source_span.parent
-					while not (new_parent.parent is None):
-						new_parents.append(new_parent)
-						new_parent = new_parent.parent
+					if left == 0:
+						# Move up while on left
+						new_parent = source_span.parent
+						while not (new_parent.parent is None):
+							new_parents.append(new_parent)
+							if new_parent.parent.span[0] < source_span.span[0]:
+								break
+							new_parent = new_parent.parent
+					if right == len(source_span.subtrees) - 1:
+						# Move up while on right
+						new_parent = source_span.parent
+						while not (new_parent.parent is None):
+							new_parents.append(new_parent)
+							if new_parent.parent.span[1] > source_span.span[1]:
+								break
+							new_parent = new_parent.parent
 
 				for new_parent in new_parents:
 					yield gen_move_successor(source_span, left, right, new_parent, cerrors, gold)

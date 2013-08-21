@@ -110,14 +110,20 @@ def move_nodes(nodes, new_parent, in_place=True, remove_empty=True, remove_trivi
 	# Find the insertion point in the new parent's subtrees
 	old_parent = nodes[0].parent
 	nodes.sort(key=lambda x: x.span)
+	node_span = (nodes[0].span[0], nodes[-1].span[1])
 	insertion_point = 0
-	if new_parent.subtrees[0].span[0] == nodes[-1].span[1]:
+	if new_parent.subtrees[0].span[0] == node_span[1]:
+		# Inserting before all that are there currently
+		pass
+	elif new_parent.subtrees[0].span[0] == node_span[0]:
 		# Inserting before all that are there currently
 		pass
 	else:
 		for subtree in new_parent.subtrees:
+			if subtree.span[0] == node_span[1]:
+				break
 			insertion_point += 1
-			if subtree.span[1] == nodes[0].span[0]:
+			if subtree.span[1] == node_span[0]:
 				break
 		if insertion_point > len(new_parent.subtrees):
 			return (False, "new_parent did not have suitable insertion point")
