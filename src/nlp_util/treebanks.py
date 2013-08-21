@@ -45,7 +45,7 @@ def ptb_cleaning(tree, in_place=True):
 		if node.word in word_to_POS_mapping:
 			node.label = word_to_POS_mapping[node.word]
 		if node.word in bugfix_word_to_POS:
-			node.label = bugifx_word_to_POS[node.word]
+			node.label = bugfix_word_to_POS[node.word]
 	return tree
 
 def remove_trivial_unaries(tree, in_place=True):
