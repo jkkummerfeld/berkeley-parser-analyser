@@ -95,7 +95,10 @@ For the coloured output we recommend viewing files like so:
 
 less -x3 <filename>
 
-That way the trees don't get too wide.
+That way the trees don't get too wide.  Also, if you are having trouble seeing
+the colours, make sure you are using a tool that interprets ANSI escape codes
+(http://en.wikipedia.org/wiki/ANSI_escape_code#Support).  Some people have told
+me that they needed to use less with the '-R' flag for them to work.
 
 ------------------------------------------------------------------------------
   Questions?
