@@ -21,6 +21,15 @@ And then wrote:
 
 ---------------------------------------------------------------------
 
+2. What do I need to do to see the colours in the output files?
+
+If you are not seeing colours when you look at the output files (e.g. by
+running "less <filename>") it may be because your terminal is not interpreting
+raw ANSI escape codes (http://en.wikipedia.org/wiki/ANSI_escape_code#Support).
+For 'less' this can be changed by passing the '-R' flag (or '-r').
+
+---------------------------------------------------------------------
+
 
 Copyright (c) 2013, Jonathan K. Kummerfeld
 All rights reserved.
