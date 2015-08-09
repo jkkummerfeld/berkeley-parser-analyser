@@ -1,48 +1,51 @@
-Berkeley Parser Analyser
+# Berkeley Parser Analyser
 
+This software classifies mistakes in the output of parsers.  For a full description of the method, and discussion of results when applied to a range of well known parsers, see:
 
-This software classifies mistakes in the output of parsers.  For a full
-description of the method, and discussion of results when applied to a range of
-well known parsers, see:
-
-   Parser Showdown at the Wall Street Corral: An Empirical Investigation of Error Types in Parser Output 
-   Jonathan K. Kummerfeld, David Hall, James R. Curran, and Dan Klein 
+   [Parser Showdown at the Wall Street Corral: An Empirical Investigation of Error Types in Parser Output](https://aclweb.org/anthology/D/D12/D12-1096.pdf),
+   Jonathan K. Kummerfeld, David Hall, James R. Curran, and Dan Klein,
    EMNLP 2012
 
-   An Empirical Examination of Challenges in Chinese Parsing
-   Jonathan K. Kummerfeld, Daniel Tse, James R. Curran, and Dan Klein
+   [An Empirical Examination of Challenges in Chinese Parsing](https://aclweb.org/anthology/P/P13/P13-2018.pdf),
+   Jonathan K. Kummerfeld, Daniel Tse, James R. Curran, and Dan Klein,
    ACL (short) 2013
 
 If you use my code in your own work, please cite the following papers (for
 English and Chinese respectively):
 
+```
 @InProceedings{Kummerfeld-etal:2012:EMNLP,
-  author    = {Jonathan K. Kummerfeld and David Hall and James R. Curran and Dan Klein},
+  author    = {Jonathan K. Kummerfeld  and  David Hall  and  James R. Curran  and  Dan Klein},
   title     = {Parser Showdown at the Wall Street Corral: An Empirical Investigation of Error Types in Parser Output},
-  booktitle = {Proceedings of EMNLP},
+  booktitle = {Proceedings of the 2012 Joint Conference on Empirical Methods in Natural Language Processing and Computational Natural Language Learning},
   address   = {Jeju Island, South Korea},
   month     = {July},
   year      = {2012},
   pages     = {1048--1059},
   software  = {http://code.google.com/p/berkeley-parser-analyser/},
+  url       = {http://www.aclweb.org/anthology/D12-1096},
 }
 
 @InProceedings{Kummerfeld-etal:2013:ACL,
-  author    = {Jonathan K. Kummerfeld and Daniel Tse and James R. Curran and Dan Klein},
+  author    = {Jonathan K. Kummerfeld  and  Daniel Tse  and  James R. Curran  and  Dan Klein},
   title     = {An Empirical Examination of Challenges in Chinese Parsing},
-  booktitle = {Proceedings of ACL},
+  booktitle = {Proceedings of the 51st Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers)},
   address   = {Sofia, Bulgaria},
   month     = {August},
   year      = {2013},
   pages     = {98--103},
   software  = {http://code.google.com/p/berkeley-parser-analyser/},
+  url       = {http://www.aclweb.org/anthology/P13-2018},
 }
+```
 
+Here is an example of system output (red brackets are extra, blue are missing and yellow are crossing):
 
+![Image of system terminal output](http://www.jkk.name/images/example_analysis_output.png.png)
 
-------------------------------------------------------------------------------
-  Running the System
-------------------------------------------------------------------------------
+I am continuing to work on this so if you have questions (or find bugs!) please let me know. Some questions are answered in the <a href='https://code.google.com/p/berkeley-parser-analyser/source/browse/FAQ.txt'>FAQ.txt</a> file. If you can't find an answer there, please mail me.
+
+## Running the System
 
 There are four main programs:
 
