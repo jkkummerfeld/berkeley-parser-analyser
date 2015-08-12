@@ -28,7 +28,7 @@ English and Chinese respectively):
   month     = {July},
   year      = {2012},
   pages     = {1048--1059},
-  software  = {http://code.google.com/p/berkeley-parser-analyser/},
+  software  = {https://github.com/jkkummerfeld/berkeley-parser-analyser},
   url       = {http://www.aclweb.org/anthology/D12-1096},
 }
 
@@ -40,7 +40,7 @@ English and Chinese respectively):
   month     = {August},
   year      = {2013},
   pages     = {98--103},
-  software  = {http://code.google.com/p/berkeley-parser-analyser/},
+  software  = {https://github.com/jkkummerfeld/berkeley-parser-analyser},
   url       = {http://www.aclweb.org/anthology/P13-2018},
 }
 ```
