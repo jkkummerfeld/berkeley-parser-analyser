@@ -82,13 +82,11 @@ For the error analysis runs the files produced are:
 - classified.berkeley.test_trees  -  The test trees
 - classified.berkeley.gold_trees  -  The gold trees
 
-For the coloured output it can help to view the files as follows:
+For the coloured output it can help to view the files as follows (with `-x3` to avoid the trees getting too wide):
 
 ```
 less -x3 <filename>
 ```
-
-That way the trees don't get too wide.  Also, if you are having trouble seeing the colours, make sure you are using a tool that interprets [ANSI escape codes](http://en.wikipedia.org/wiki/ANSI_escape_code#Support).  Some people have told me that they needed to use less with the '-R' flag for them to work.
 
 ##  Questions?
 
@@ -121,10 +119,9 @@ And then wrote:
 Q: What do I need to do to see the colours in the output files?
 
 If you are not seeing colours when you look at the output files (e.g. by
-running "less <filename>") it may be because your terminal is not interpreting
-raw ANSI escape codes (http://en.wikipedia.org/wiki/ANSI_escape_code#Support).
-For 'less' this can be changed by passing the '-R' flag (or '-r').
-
+running `less <filename>`) it may be because your terminal is not interpreting
+raw [ANSI escape codes](http://en.wikipedia.org/wiki/ANSI_escape_code#Support).
+For `less` this can be changed by passing the `-R` flag (or `-r`).
 
 Q: Other questions?
 
