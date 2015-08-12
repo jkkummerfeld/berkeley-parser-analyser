@@ -10,6 +10,12 @@ This software classifies mistakes in the output of parsers.  For a full descript
    Jonathan K. Kummerfeld, Daniel Tse, James R. Curran, and Dan Klein,
    ACL (short) 2013
 
+To use the system, download it one of these ways, and run as shown below:
+
+- [Download .zip](https://github.com/jkkummerfeld/berkeley-parser-analyser/zipball/master)
+- [Download .tar.gz](https://github.com/jkkummerfeld/berkeley-parser-analyser/tarball/master)
+- `git clone https://github.com/jkkummerfeld/berkeley-parser-analyser.git`
+
 If you use my code in your own work, please cite the following papers (for
 English and Chinese respectively):
 
