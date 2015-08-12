@@ -49,7 +49,7 @@ Here is an example of system output (red brackets are extra, blue are missing an
 
 ![Image of system terminal output](http://www.jkk.name/images/example_analysis_output.png)
 
-I am continuing to work on this so if you have questions (or find bugs!) please let me know. Some questions are answered in the <a href='https://code.google.com/p/berkeley-parser-analyser/source/browse/FAQ.txt'>FAQ.txt</a> file. If you can't find an answer there, please mail me.
+I am continuing to work on this so if you have questions (or find bugs!) please let me know.
 
 ## Running the System
 
