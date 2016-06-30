@@ -111,7 +111,7 @@ To make it easy to create a whole lot of boxes I defined some new commands:
 \newcommand{\mybar}[1]{\framebox[\myboxwidth][l]{\rule{#1mm}{\mybarheight}}}
 ```
 
-And then wrote:
+And then write:
 ```
 \mybar{1.30}
 ```
