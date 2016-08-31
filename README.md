@@ -49,7 +49,8 @@ Here is an example of system output (red brackets are extra, blue are missing an
 
 ![Image of system terminal output](http://www.jkk.name/images/example_analysis_output.png)
 
-I am continuing to work on this so if you have questions (or find bugs!) please let me know.
+If you find a bug please submit an issue, and if you have a question please contact me.
+I am not actively working on this project anymore, but will try to respond to feedback when possible.
 
 ## Running the System
 
@@ -60,17 +61,14 @@ There are four main programs:
 - print_coloured_errors.py, Print errors using colour in a plain text format (red for extra brackets, blue for missing brackets, yellow for crossing brackets, and white for correct brackets)
 - reprint_trees.py, Reprint a set of trees in a different format (e.g. single line or multiline, plain text or latex), edits such as removing traces can also be applied
 
-Running each with no arguments will provide help information.  Also see the sample folders for example runs.  These were generated as follows:
+Running each with no arguments will provide help information.  Here are some example commands using the provided sample data:
 
 ```
-English:
-./src/classify_english.py sample_input/english.gold sample_input/english.berkeley sample_output/classified.english.berkeley
-
-Chinese:
-./src/classify_chinese.py sample_input/chinese.gold sample_input/chinese.berkeley sample_output/classified.chinese.berkeley
+English errors:
+./berkeley_parse_analyser/classify_english.py sample_data/wsj01.mrg sample_data/berkeley.mrg classified.english.berkeley
 
 Coloured errors:
-./nlp_util/tools/print_coloured_errors.py sample_input/english.gold sample_input/english.berkeley sample_output/coloured_errors.english.berkeley
+./berkeley_parse_analyser/print_coloured_errors.py sample_data/wsj01.mrg sample_data/berkeley.mrg coloured_errors.english.berkeley
 ```
 
 For the error analysis runs the files produced are:
@@ -104,7 +102,7 @@ Then write this for each box, (it makes a thick horizontal rule, inside a frame 
 \framebox[8mm][l]{\rule{1.3mm}{2mm}}
 ```
 
-To make it easy to create a whole lot of boxes I defined some new commands:
+Defining new commands can make it easier to create a whole lot of boxes:
 ```
 \newcommand{\mybarheight}{2mm}
 \newcommand{\myboxwidth}{8mm}
