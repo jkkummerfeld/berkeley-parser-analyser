@@ -184,17 +184,18 @@ class PSTree:
             else:
                 return None
         else:
-            ans = []
+            subparts = []
             for subtree in self.subtrees:
                 words = subtree.word_yield(span, as_list)
                 if words is not None:
                     if as_list:
-                        ans += words
+                        subparts += words
                     else:
-                        ans.append(words)
-            if not as_list:
-                ans = ' '.join(ans)
-            return ans
+                        subparts.append(words)
+            if as_list:
+                return subparts
+            else:
+                return ' '.join(subparts)
 
     def node_dict(self, depth=0, node_dict=None):
         '''Get a dictionary of labelled nodes. Note that we use a dictionary to
@@ -328,7 +329,7 @@ def clone_and_find(nodes):
     '''Clone the tree these nodes are in and finds the equivalent nodes in the
     new tree.'''
     return_list = True
-    if type(nodes) != type([]):
+    if not isinstance(nodes, list):
         return_list = False
         nodes = [nodes]
 

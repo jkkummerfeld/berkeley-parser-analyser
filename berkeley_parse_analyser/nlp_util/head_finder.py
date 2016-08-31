@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
+'''Identifies the word that is the lexical head of each non-terminal in a parse'''
 
 import sys
 

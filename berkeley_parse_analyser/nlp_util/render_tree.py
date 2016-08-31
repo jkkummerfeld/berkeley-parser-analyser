@@ -3,7 +3,7 @@
 # vim: set ts=2 sw=2 noet:
 '''Various string representations of trees.'''
 
-import pstree, parse_errors
+import parse_errors
 
 def text_words(tree, show_traces=False):
     '''Print just the words in the tree.'''
@@ -100,17 +100,17 @@ def tex_synttree(tree, other_spans=None, depth=0, compressed=True, span=None):
     # Clean the label and word
     label = tree.label
     if '$' in label:
-        label = '\$'.join(label.split('$'))
+        label = '\\$'.join(label.split('$'))
     word = tree.word
     if word is not None:
         word = ''.join(word.split('.'))
-        word = '\&'.join(word.split('&'))
-        word = '\$'.join(word.split('$'))
+        word = '\\&'.join(word.split('&'))
+        word = '\\$'.join(word.split('$'))
 
     # Make the text
     ans = ''
     if tree.parent is None:
-        ans += '\synttree'
+        ans += '\\synttree'
         if not all_in_subtree:
             ans += '\n'
     elif not all_in_subtree:
@@ -122,7 +122,7 @@ def tex_synttree(tree, other_spans=None, depth=0, compressed=True, span=None):
             if correct:
                 ans += '[%s' % (label)
             else:
-                ans += '[\wrongnode{%s}' % (label)
+                ans += '[\\wrongnode{%s}' % (label)
         for subtree in tree.subtrees:
             ans += tex_synttree(subtree, other_spans, depth + 1, compressed, span)
         if not all_in_subtree:
@@ -131,10 +131,10 @@ def tex_synttree(tree, other_spans=None, depth=0, compressed=True, span=None):
     # When compressing we only want errors visible
     if compressed and 'wrongnode' not in ans and tree.word is None:
         words = ''.join(tree.word_yield().split('.'))
-        words = '\&'.join(words.split('&'))
-        words = '\$'.join(words.split('$'))
+        words = '\\&'.join(words.split('&'))
+        words = '\\$'.join(words.split('$'))
         if tree.parent is None:
-            ans = '\synttree\n'
+            ans = '\\synttree\n'
         else:
             ans = '\n' + '  ' * depth
         ans += '[%s [.t %s]]' % (label, words)
@@ -297,13 +297,13 @@ def text_coloured_errors(tree, gold=None, depth=0, single_line=False, missing=No
                     ans += start_missing + ')' + end_colour
                 else:
                     # Put them on the same line
-                    start = 0
+                    start_pos = 0
                     for char in ans:
                         if char not in '\n\t':
                             break
-                        start += 1
-                    pretext = ans[:start]
-                    ans = ans[start:]
+                        start_pos += 1
+                    pretext = ans[:start_pos]
+                    ans = ans[start_pos:]
                     extra_text = start_missing + '(' + error[2] + end_colour + ' '
                     ans = pretext + extra_text + ans
                     ans += start_missing + ')' + end_colour

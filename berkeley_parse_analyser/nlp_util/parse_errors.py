@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
-import pstree
-
-class Parse_Error_Set:
+class ParseErrorSet:
     def __init__(self, gold=None, test=None, include_terminals=False):
         self.missing = []
         self.crossing = []
@@ -128,7 +126,7 @@ def counts_for_prf(test, gold, include_root=False, include_terminals=False):
             continue
         gcount += 1
     match = tcount
-    errors = Parse_Error_Set(gold, test, True)
+    errors = ParseErrorSet(gold, test, True)
     match = tcount - len(errors.extra)
     if include_terminals:
         match -= len(errors.POS)

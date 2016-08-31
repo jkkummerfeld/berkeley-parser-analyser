@@ -6,19 +6,20 @@
 powerful, and flexible, alternatives out there, but this was what I needed at
 the time.'''
 
-import sys, time
+import sys
+import time
 
 def header(args, out=sys.stdout):
-    header = "# Time of run:\n# "
-    header += time.ctime(time.time())
-    header += "\n# Command:\n# "
-    header += ' '.join(args)
-    header += "\n#"
-    if type(out) == type(sys.stdout):
-        print >> out, header
-    elif type(out) == type([]):
+    head_text = "# Time of run:\n# "
+    head_text += time.ctime(time.time())
+    head_text += "\n# Command:\n# "
+    head_text += ' '.join(args)
+    head_text += "\n#"
+    if isinstance(out, file):
+        print >> out, head_text
+    elif isinstance(out, list):
         for outfile in out:
-            print >> outfile, header
+            print >> outfile, head_text
     else:
         print >> sys.stderr, "Invalid list of output files passed to header"
         sys.exit(1)

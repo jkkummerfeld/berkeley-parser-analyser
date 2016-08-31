@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
+'''Useful functions for evaluation of performance'''
 
 def calc_prf(match, gold, test):
     '''Calculate Precision, Recall and F-Score, with:
@@ -25,12 +26,12 @@ def calc_prf(match, gold, test):
         return 0.0, 1.0, 0.0
     if test == 0 or match == 0:
         return 0.0, 0.0, 0.0
-    p = match / float(test)
-    r = match / float(gold)
+    precision = match / float(test)
+    recall = match / float(gold)
     try:
-        f = 2 * match / (float(test + gold))
-        return p, r, f
-    except:
+        fscore = 2 * match / (float(test + gold))
+        return precision, recall, fscore
+    except ZeroDivisionError:
         return 0.0, 0.0, 0.0
 
 if __name__ == "__main__":

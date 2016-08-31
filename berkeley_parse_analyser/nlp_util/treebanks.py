@@ -244,7 +244,6 @@ def ptb_read_tree(source, return_empty=False, allow_empty_labels=False, allow_em
         char = source.read(1)
         if char == '':
             return None
-            break
         if char == '\n' and cur_text == ' ' and blank_line_coverage:
             return "Empty"
         if char in '\n\t':

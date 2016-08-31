@@ -85,7 +85,7 @@ def remove_node_by_span(tree, span, label, position, in_place):
     nodes of the requested type exist.  Zero indicates to remove the top node,
     one indicates to remove the second, and so on.'''
     nodes = tree.get_nodes('all', span[0], span[1])
-    nodes = filter(lambda node: node.label == label, nodes)
+    nodes = [node for node in nodes if node.label == label]
     if len(nodes) <= position:
         return (False, "No node matching {} ({}, {} - {}) found".format(position, label, *span))
     return remove_node_by_node(nodes[position], in_place)
