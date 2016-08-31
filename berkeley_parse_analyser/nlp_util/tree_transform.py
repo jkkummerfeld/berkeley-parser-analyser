@@ -158,4 +158,3 @@ def move_nodes(nodes, new_parent, in_place=True, remove_empty=True, remove_trivi
     new_parent.root().calculate_spans()
 
     return (True, (new_parent.root(), nodes, new_parent))
-

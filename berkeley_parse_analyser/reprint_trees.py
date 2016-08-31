@@ -128,4 +128,3 @@ if __name__ == '__main__':
 			print render_tree.text_words(tree)
 	if out_format == 't':
 		print '\\end{document}'
-
