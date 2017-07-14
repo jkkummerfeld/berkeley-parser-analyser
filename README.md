@@ -88,7 +88,15 @@ less -x3 <filename>
 
 ##  Questions?
 
-Q: How can I make a bar figure like in the papers?
+#### Q: How can I view the output files?
+
+All of the output files are plain text. View their contents with tools like less, nano, or vim:
+
+```
+less <filename>
+```
+
+#### Q: How can I make a bar figure like in the papers?
 
 In LaTeX, define these two lengths:
 
@@ -114,7 +122,7 @@ And then write:
 \mybar{1.30}
 ```
 
-Q: What do I need to do to see the colours in the output files?
+#### Q: What do I need to do to see the colours in the output files?
 
 If you are not seeing colours when you look at the output files (e.g. by
 running `less <filename>`) it may be because your terminal is not interpreting
