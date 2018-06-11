@@ -51,7 +51,8 @@ Here is an example of system output (red brackets are extra, blue are missing an
 
 ![Example error visualisation](./example-error.png)
 
-I am continuing to work on this so if you have questions (or find bugs!) please let me know.
+If you find a bug please submit an issue, and if you have a question please contact me.
+I am not actively working on this project anymore, but will try to respond to feedback when possible.
 
 ## Running the System
 
@@ -62,17 +63,14 @@ There are four main programs:
 - print_coloured_errors.py, Print errors using colour in a plain text format (red for extra brackets, blue for missing brackets, yellow for crossing brackets, and white for correct brackets)
 - reprint_trees.py, Reprint a set of trees in a different format (e.g. single line or multiline, plain text or latex), edits such as removing traces can also be applied
 
-Running each with no arguments will provide help information.  Also see the sample folders for example runs.  These were generated as follows:
+Running each with no arguments will provide help information.  Here are some example commands using the provided sample data:
 
 ```
-English:
-./src/classify_english.py sample_input/english.gold sample_input/english.berkeley sample_output/classified.english.berkeley
-
-Chinese:
-./src/classify_chinese.py sample_input/chinese.gold sample_input/chinese.berkeley sample_output/classified.chinese.berkeley
+English errors:
+./berkeley_parse_analyser/classify_english.py sample_data/wsj01.mrg sample_data/berkeley.mrg classified.english.berkeley
 
 Coloured errors:
-./nlp_util/tools/print_coloured_errors.py sample_input/english.gold sample_input/english.berkeley sample_output/coloured_errors.english.berkeley
+./berkeley_parse_analyser/print_coloured_errors.py sample_data/wsj01.mrg sample_data/berkeley.mrg coloured_errors.english.berkeley
 ```
 
 For the error analysis runs the files produced are:
@@ -92,7 +90,15 @@ less -x3 <filename>
 
 ##  Questions?
 
-Q: How can I make a bar figure like in the papers?
+#### Q: How can I view the output files?
+
+All of the output files are plain text. View their contents with tools like less, nano, or vim:
+
+```
+less <filename>
+```
+
+#### Q: How can I make a bar figure like in the papers?
 
 In LaTeX, define these two lengths:
 
@@ -106,19 +112,19 @@ Then write this for each box, (it makes a thick horizontal rule, inside a frame 
 \framebox[8mm][l]{\rule{1.3mm}{2mm}}
 ```
 
-To make it easy to create a whole lot of boxes I defined some new commands:
+Defining new commands can make it easier to create a whole lot of boxes:
 ```
 \newcommand{\mybarheight}{2mm}
 \newcommand{\myboxwidth}{8mm}
 \newcommand{\mybar}[1]{\framebox[\myboxwidth][l]{\rule{#1mm}{\mybarheight}}}
 ```
 
-And then wrote:
+And then write:
 ```
 \mybar{1.30}
 ```
 
-Q: What do I need to do to see the colours in the output files?
+#### Q: What do I need to do to see the colours in the output files?
 
 If you are not seeing colours when you look at the output files (e.g. by
 running `less <filename>`) it may be because your terminal is not interpreting

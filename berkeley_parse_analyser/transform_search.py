@@ -149,7 +149,7 @@ def gen_move_successor(source_span, left, right, new_parent, cerrors, gold):
 			info['POS confusion'] = (get_label(preterminal), get_label(gold_eq))
 
 	# Consider fixing a missing node in the new location as well
-	nerrors = parse_errors.Parse_Error_Set(gold, ntree)
+	nerrors = parse_errors.ParseErrorSet(gold, ntree)
 	to_fix = None
 	for error in nerrors.missing:
 		if error[1][0] <= nodes[0].span[0] and nodes[-1].span[1] <= error[1][1]:
@@ -270,7 +270,7 @@ def greedy_search(gold, test, classify):
 			return (0, iters), None
 		# Check for victory
 		ctree = cur[0]
-		cerrors = parse_errors.Parse_Error_Set(gold, ctree)
+		cerrors = parse_errors.ParseErrorSet(gold, ctree)
 		if len(cerrors) == 0:
 			final = cur
 			break
