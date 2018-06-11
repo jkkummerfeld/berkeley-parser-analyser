@@ -47,7 +47,9 @@ English and Chinese respectively):
 
 Here is an example of system output (red brackets are extra, blue are missing and yellow are crossing):
 
-![Image of system terminal output](http://www.jkk.name/images/example_analysis_output.png)
+![Image of system terminal output](./example-terminal.png)
+
+![Example error visualisation](./example-error.png)
 
 I am continuing to work on this so if you have questions (or find bugs!) please let me know.
 
