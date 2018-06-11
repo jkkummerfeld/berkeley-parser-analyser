@@ -49,8 +49,6 @@ Here is an example of system output (red brackets are extra, blue are missing an
 
 ![Image of system terminal output](./example-terminal.png)
 
-![Example error visualisation](./example-error.png)
-
 If you find a bug please submit an issue, and if you have a question please contact me.
 I am not actively working on this project anymore, but will try to respond to feedback when possible.
 
