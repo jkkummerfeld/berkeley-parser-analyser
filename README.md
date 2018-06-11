@@ -129,11 +129,6 @@ running `less <filename>`) it may be because your terminal is not interpreting
 raw [ANSI escape codes](http://en.wikipedia.org/wiki/ANSI_escape_code#Support).
 For `less` this can be changed by passing the `-R` flag (or `-r`).
 
-Q: Other questions?
+#### Q: Other questions?
 
-Contact me!
-
-[my initials] @berkeley.edu 
-
-Where my initials are 'jkk'
-
+Either open an issue or contact me! See [www.jkk.name](http://www.jkk.name) for my contact info.
