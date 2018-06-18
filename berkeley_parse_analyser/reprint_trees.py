@@ -52,12 +52,12 @@ def get_args():
 
 if __name__ == '__main__':
 	if len(sys.argv) == 1:
-		print "Read trees from stdin and print them to stdout."
-		print "Options:"
-		print "  -(o)utput = (s)ingle_line | (m)ulti_line | (t)ex | (w)ords | (o)ntonotes | (p)os tagged"
-		print "  -(e)dit = remove (t)races, remove (f)unction tags, apply (c)ollins rules, (h)omogenise top, remove trivial (u)naries"
-		print "  -(g)old = <gold filenmae>"
-		print "\ne.g. %s -f t -e tf -g trees_gold < trees_in > trees_out" % sys.argv[0]
+		print( "Read trees from stdin and print( them to stdout." )
+		print( "Options:" )
+		print( "  -(o)utput = (s)ingle_line | (m)ulti_line | (t)ex | (w)ords | (o)ntonotes | (p)os tagged" )
+		print( "  -(e)dit = remove (t)races, remove (f)unction tags, apply (c)ollins rules, (h)omogenise top, remove trivial (u)naries" )
+		print( "  -(g)old = <gold filenmae>" )
+		print( "\ne.g. %s -f t -e tf -g trees_gold < trees_in > trees_out" % sys.argv[0] )
 		sys.exit(0)
 
 	args = get_args()
@@ -68,14 +68,14 @@ if __name__ == '__main__':
 		gold_file = treebanks.generate_trees(gold_file, allow_empty_labels=True)
 
 	if out_format == 't':
-		print tex_start
+		print( tex_start )
 	for tree in treebanks.generate_trees(sys.stdin, return_empty=True, allow_empty_labels=True):
 		gold_tree = None
 		if gold_file is not None:
 			gold_tree = gold_file.next()
 
 		if tree is None:
-			print
+			print( "" )
 			continue
 
 		# Apply edits
@@ -101,30 +101,30 @@ if __name__ == '__main__':
 			if gold_tree is not None:
 				treebanks.remove_trivial_unaries(gold_tree)
 
-		# Print tree
+		# print( tree
 		if out_format == 's':
-			print render_tree.text_tree(tree, single_line=True)
+			print( render_tree.text_tree(tree, single_line=True) )
 		elif out_format == 'm':
-			print render_tree.text_tree(tree, single_line=False)
+			print( render_tree.text_tree(tree, single_line=False) )
 		elif out_format == 'o':
-			print render_tree.text_ontonotes(tree)
+			print( render_tree.text_ontonotes(tree) )
 		elif out_format == 'p':
-			print render_tree.text_POS_tagged(tree)
+			print( render_tree.text_POS_tagged(tree) )
 		elif out_format == 't':
 			if gold_tree is None:
-				print '\\scalebox{\\derivscale}{'
-				print render_tree.tex_synttree(tree)
-				print '}\n\\small\n\\pagebreak'
+				print( '\\scalebox{\\derivscale}{' )
+				print( render_tree.tex_synttree(tree) )
+				print( '}\n\\small\n\\pagebreak' )
 			else:
-				print '\\scalebox{\\derivscale}{'
+				print( '\\scalebox{\\derivscale}{' )
 				other_spans = gold_tree.span_dict()
-				print render_tree.tex_synttree(tree, other_spans)
-				print '}\n\\small\n\\pagebreak'
-				print '\\scalebox{\\derivscale}{'
+				print( render_tree.tex_synttree(tree, other_spans) )
+				print( '}\n\\small\n\\pagebreak' )
+				print( '\\scalebox{\\derivscale}{' )
 				other_spans = tree.span_dict()
-				print render_tree.tex_synttree(gold_tree, other_spans)
-				print '}\n\\small\n\\pagebreak'
+				print( render_tree.tex_synttree(gold_tree, other_spans) )
+				print( '}\n\\small\n\\pagebreak' )
 		elif out_format == 'w':
-			print render_tree.text_words(tree)
+			print( render_tree.text_words(tree) )
 	if out_format == 't':
-		print '\\end{document}'
+		print( '\\end{document}' )

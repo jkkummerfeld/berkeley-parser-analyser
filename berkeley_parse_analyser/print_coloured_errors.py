@@ -13,7 +13,7 @@ def mprint(text, out_dict, out_name):
 			all_stdout = False
 	
 	if all_stdout:
-		print text
+		print( text )
 	elif out_name == 'all':
 		for key in out_dict:
 			print( text, file=out_dict[key] )
@@ -23,9 +23,9 @@ def mprint(text, out_dict, out_name):
 
 if __name__ == '__main__':
 	if len(sys.argv) != 4:
-		print "Print trees with colours to indicate errors (red for extra, blue for missing, yellow for crossing missing)"
-		print "   %s <gold> <test> <output_prefix>" % sys.argv[0]
-		print "Running doctest"
+		print( "Print trees with colours to indicate errors (red for extra, blue for missing, yellow for crossing missing)" )
+		print( "   %s <gold> <test> <output_prefix>" % sys.argv[0] )
+		print( "Running doctest" )
 		import doctest
 		doctest.testmod()
 		sys.exit(0)
