@@ -6,8 +6,15 @@
 powerful, and flexible, alternatives out there, but this was what I needed at
 the time.'''
 
+from __future__ import print_function
 import sys
 import time
+# added for working in both python2 and python3 although it's not pretty
+import io
+try:
+    file_types = (file, io.IOBase)
+except NameError:
+    file_types = (io.IOBase,)
 
 def header(args, out=sys.stdout):
     head_text = "# Time of run:\n# "
@@ -15,25 +22,25 @@ def header(args, out=sys.stdout):
     head_text += "\n# Command:\n# "
     head_text += ' '.join(args)
     head_text += "\n#"
-    if isinstance(out, file):
-        print >> out, head_text
-    elif isinstance(out, list):
+    if isinstance(out, file_types):
+        print( head_text, file=out )
+    elif isinstance(out, (list,)):
         for outfile in out:
-            print >> outfile, head_text
+            print( head_text, file=outfile )
     else:
-        print >> sys.stderr, "Invalid list of output files passed to header"
+        sys.stderr.write( "Invalid list of output files passed to header" )
         sys.exit(1)
 
 def argcheck(argv, minargs, maxargs, desc, arg_desc, further_desc=''):
     if minargs <= len(argv) <= maxargs:
         return
-    print >> sys.stderr, "{}\n  {} {}".format(desc, argv[0], arg_desc)
+    sys.stderr.write( "{}\n  {} {}".format(desc, argv[0], arg_desc) )
     if len(further_desc) > 0:
-        print >> sys.stderr, "\n{}".format(further_desc)
-    print >> sys.stderr, "Expected {} to {} args, got:\n{}".format(minargs - 1, maxargs - 1, ' '.join(argv))
+        sys.stderr.write( "\n{}".format(further_desc) )
+    sys.stderr.write( "Expected {} to {} args, got:\n{}".format(minargs - 1, maxargs - 1, ' '.join(argv)) )
     sys.exit(1)
 
 if __name__ == "__main__":
-    print "Running doctest"
+    print( "Running doctest" )
     import doctest
     doctest.testmod()

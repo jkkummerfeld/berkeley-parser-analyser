@@ -62,7 +62,7 @@ def first_search(tree, options, head_map):
 
 def last_search(tree, options, head_map):
     '''Starting from the end, find the first subtree to match as required'''
-    for i in xrange(len(tree.subtrees) - 1, -1, -1):
+    for i in range(len(tree.subtrees) - 1, -1, -1):
         subtree = tree.subtrees[i]
         if get_head(head_map, subtree)[2] in options or subtree.label in options:
             add_head(head_map, tree, get_head(head_map, subtree))
@@ -109,15 +109,15 @@ def collins_find_heads(tree, head_map=None):
             collins_np(tree, head_map)
         else:
             if tree.label not in ['ROOT', 'TOP', 'S1', '']:
-                print >> sys.stderr, "Unknown Label: %s" % tree.label
-                print >> sys.stderr, "In tree:", tree.root()
+                sys.stderr.write( "Unknown Label: %s" % tree.label )
+                sys.stderr.write( "In tree:", tree.root() )
             add_head(head_map, tree, get_head(head_map, tree.subtrees[-1]))
         return head_map
 
     # Look through and take the first/last occurrence that matches
     info = COLLINS_MAPPING_TABLE[tree.label]
     for label in info[1]:
-        for i in xrange(len(tree.subtrees)):
+        for i in range(len(tree.subtrees)):
             if info[0] == 'right':
                 i = len(tree.subtrees) - i - 1
             subtree = tree.subtrees[i]
@@ -301,6 +301,6 @@ def collins_find_heads(tree, head_map=None):
 #  5 WHPP  1   IN TO FW
 
 if __name__ == "__main__":
-    print "Running doctest"
+    print( "Running doctest" )
     import doctest
     doctest.testmod()

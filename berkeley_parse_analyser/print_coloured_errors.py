@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
+from __future__ import print_function
 import sys
 from nlp_util import pstree, render_tree, nlp_eval, treebanks, parse_errors
 
@@ -15,9 +16,9 @@ def mprint(text, out_dict, out_name):
 		print text
 	elif out_name == 'all':
 		for key in out_dict:
-			print >> out_dict[key], text
+			print( text, file=out_dict[key] )
 	else:
-		print >> out_dict[out_name], text
+		print( text, out_dict[out_name] )
 
 
 if __name__ == '__main__':

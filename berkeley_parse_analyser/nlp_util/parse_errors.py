@@ -55,7 +55,8 @@ def get_errors(test, gold, include_terminals=False):
                             ans.append(('diff POS', tnode.span, tnode.label, tnode, gnode.label))
 
     test_spans = [(span.span[0], span.span[1], span) for span in test]
-    test_spans.sort()
+    # TODO: check that this change make sense
+    test_spans.sort(key=lambda x: (x[0], x[1]))
     test_span_set = {}
     to_remove = []
     for span in test_spans:
@@ -70,7 +71,8 @@ def get_errors(test, gold, include_terminals=False):
         test_spans.remove(span)
 
     gold_spans = [(span.span[0], span.span[1], span) for span in gold]
-    gold_spans.sort()
+    # TODO: check that this change make sense
+    gold_spans.sort(key=lambda x: (x[0], x[1]))
     gold_span_set = {}
     to_remove = []
     for span in gold_spans:
@@ -133,4 +135,4 @@ def counts_for_prf(test, gold, include_root=False, include_terminals=False):
     return match, gcount, tcount, len(errors.crossing), len(errors.POS)
 
 if __name__ == '__main__':
-    print "No unit testing implemented for Error_Set"
+    print( "No unit testing implemented for Error_Set" )

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
-from pstree import *
+from .pstree import *
 
 ptb_tag_set = set(['S', 'SBAR', 'SBARQ', 'SINV', 'SQ', 'ADJP', 'ADVP', 'CONJP',
 'FRAG', 'INTJ', 'LST', 'NAC', 'NP', 'NX', 'PP', 'PRN', 'PRT', 'QP', 'RRC',
@@ -178,7 +178,7 @@ def apply_collins_rules(tree, in_place=True):
 
     # Remove Puncturation
     labels_to_ignore = ["-NONE-", ",", ":", "``", "''", "."]
-    remove_nodes(tree, lambda(t): t.label in labels_to_ignore, True)
+    remove_nodes(tree, lambda t: t.label in labels_to_ignore, True)
 
     # Set all PRTs to be ADVPs
     POS_to_convert = {'PRT': 'ADVP'}
@@ -359,6 +359,6 @@ def read_trees(source, tree_reader=ptb_read_tree, max_sents=-1, return_empty=Fal
     return [tree for tree in generate_trees(source, tree_reader, max_sents, return_empty)]
 
 if __name__ == '__main__':
-    print "Running doctest"
+    print( "Running doctest" )
     import doctest
     doctest.testmod()
