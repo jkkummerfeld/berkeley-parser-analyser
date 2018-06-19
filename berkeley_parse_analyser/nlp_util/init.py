@@ -23,24 +23,24 @@ def header(args, out=sys.stdout):
     head_text += ' '.join(args)
     head_text += "\n#"
     if isinstance(out, file_types):
-        print( head_text, file=out )
+        print(head_text, file=out)
     elif isinstance(out, (list,)):
         for outfile in out:
-            print( head_text, file=outfile )
+            print(head_text, file=outfile)
     else:
-        sys.stderr.write( "Invalid list of output files passed to header" )
+        print("Invalid list of output files passed to header", file=sys.stderr)
         sys.exit(1)
 
 def argcheck(argv, minargs, maxargs, desc, arg_desc, further_desc=''):
     if minargs <= len(argv) <= maxargs:
         return
-    sys.stderr.write( "{}\n  {} {}".format(desc, argv[0], arg_desc) )
+    print("{}\n  {} {}".format(desc, argv[0], arg_desc), file=sys.stderr)
     if len(further_desc) > 0:
-        sys.stderr.write( "\n{}".format(further_desc) )
-    sys.stderr.write( "Expected {} to {} args, got:\n{}".format(minargs - 1, maxargs - 1, ' '.join(argv)) )
+        print("\n{}".format(further_desc), file=sys.stderr)
+    print("Expected {} to {} args, got:\n{}".format(minargs - 1, maxargs - 1, ' '.join(argv)), file=sys.stderr)
     sys.exit(1)
 
 if __name__ == "__main__":
-    print( "Running doctest" )
+    print("Running doctest")
     import doctest
     doctest.testmod()

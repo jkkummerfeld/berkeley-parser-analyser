@@ -4,7 +4,6 @@
 '''Various string representations of trees.'''
 
 from .parse_errors import get_errors
-# import parse_errors
 
 def text_words(tree, show_traces=False):
     '''Print just the words in the tree.'''
@@ -351,6 +350,6 @@ def cut_text_below(text, depth):
     return ntext[::-1]
 
 if __name__ == '__main__':
-    print( "Running doctest" )
+    print("Running doctest")
     import doctest
     doctest.testmod()

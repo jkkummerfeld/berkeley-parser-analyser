@@ -13,19 +13,19 @@ def mprint(text, out_dict, out_name):
 			all_stdout = False
 	
 	if all_stdout:
-		print( text )
+		print(text)
 	elif out_name == 'all':
 		for key in out_dict:
-			print( text, file=out_dict[key] )
+			print(text, file=out_dict[key])
 	else:
-		print( text, out_dict[out_name] )
+		print(text, out_dict[out_name])
 
 
 if __name__ == '__main__':
 	if len(sys.argv) != 4:
-		print( "Print trees with colours to indicate errors (red for extra, blue for missing, yellow for crossing missing)" )
-		print( "   %s <gold> <test> <output_prefix>" % sys.argv[0] )
-		print( "Running doctest" )
+		print("Print trees with colours to indicate errors (red for extra, blue for missing, yellow for crossing missing)")
+		print("   %s <gold> <test> <output_prefix>" % sys.argv[0])
+		print("Running doctest")
 		import doctest
 		doctest.testmod()
 		sys.exit(0)
@@ -151,9 +151,9 @@ if __name__ == '__main__':
 				width[1] = span[2]
 		mprint('\n\\scalebox{\\derivscale}{', out, 'tex')
 		mprint(render_tree.tex_synttree(test_tree, gold_spans, span=width), out, 'tex')
-		mprint( '}\n\\small\n(a) Parser output\n\n\\vspace{3mm}\n\\scalebox{\\derivscale}{', out, 'tex')
+		mprint('}\n\\small\n(a) Parser output\n\n\\vspace{3mm}\n\\scalebox{\\derivscale}{', out, 'tex')
 		mprint(render_tree.tex_synttree(gold_tree, test_spans, span=width), out, 'tex')
-		mprint( '}\n\\small\n(b) Gold tree\n\\pagebreak', out, 'tex')
+		mprint('}\n\\small\n(b) Gold tree\n\\pagebreak', out, 'tex')
 
 		mprint("", out, 'all')
 	match = stats['out'][0]

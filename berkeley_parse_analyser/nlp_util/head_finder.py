@@ -109,8 +109,8 @@ def collins_find_heads(tree, head_map=None):
             collins_np(tree, head_map)
         else:
             if tree.label not in ['ROOT', 'TOP', 'S1', '']:
-                sys.stderr.write( "Unknown Label: %s" % tree.label )
-                sys.stderr.write( "In tree:", tree.root() )
+                print("Unknown Label: %s" % tree.label, file=sys.stderr)
+                print("In tree:", tree.root(), file=sys.stderr)
             add_head(head_map, tree, get_head(head_map, tree.subtrees[-1]))
         return head_map
 
@@ -301,6 +301,6 @@ def collins_find_heads(tree, head_map=None):
 #  5 WHPP  1   IN TO FW
 
 if __name__ == "__main__":
-    print( "Running doctest" )
+    print("Running doctest")
     import doctest
     doctest.testmod()

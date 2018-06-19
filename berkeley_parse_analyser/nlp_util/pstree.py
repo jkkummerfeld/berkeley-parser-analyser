@@ -64,20 +64,20 @@ class PSTree:
     '''Phrase Structure Tree
 
     >>> tree = tree_from_text("(ROOT (NP (NNP Newspaper)))")
-    >>> print( tree )
+    >>> print(tree)
     (ROOT (NP (NNP Newspaper)))
     >>> tree = tree_from_text("(ROOT (S (NP-SBJ (NNP Ms.) (NNP Haag) ) (VP (VBZ plays) (NP (NNP Elianti) )) (. .) ))")
-    >>> print( tree )
+    >>> print(tree)
     (ROOT (S (NP-SBJ (NNP Ms.) (NNP Haag)) (VP (VBZ plays) (NP (NNP Elianti))) (. .)))
-    >>> print( tree.word_yield()
+    >>> print(tree.word_yield())
     Ms. Haag plays Elianti .
     >>> tree = tree_from_text("(ROOT (NFP ...))")
-    >>> print( tree )
+    >>> print(tree)
     (ROOT (NFP ...))
     >>> tree.word_yield()
     '...'
     >>> tree = tree_from_text("(VP (VBD was) (VP (VBN named) (S (NP-SBJ (-NONE- *-1) ) (NP-PRD (NP (DT a) (JJ nonexecutive) (NN director) ) (PP (IN of) (NP (DT this) (JJ British) (JJ industrial) (NN conglomerate) ))))))")
-    >>> print( tree )
+    >>> print(tree)
     (VP (VBD was) (VP (VBN named) (S (NP-SBJ (-NONE- *-1)) (NP-PRD (NP (DT a) (JJ nonexecutive) (NN director)) (PP (IN of) (NP (DT this) (JJ British) (JJ industrial) (NN conglomerate)))))))
     >>> tree.word_yield()
     'was named *-1 a nonexecutive director of this British industrial conglomerate'
@@ -151,14 +151,14 @@ class PSTree:
             for i in range(len(self.subtrees)):
                 subtree = self.subtrees[i]
                 if subtree.parent != self:
-                    print( "bad parent link" )
+                    print("bad parent link")
                     ans = False
                 if i > 0 and self.subtrees[i - 1].span[1] != subtree.span[0]:
-                    print( "Subtree spans don't match" )
+                    print("Subtree spans don't match")
                     ans = False
                 ans = ans and subtree.check_consistency()
             if self.span != (self.subtrees[0].span[0], self.subtrees[-1].span[1]):
-                print( "Span doesn't match subtree spans" )
+                print("Span doesn't match subtree spans")
                 ans = False
         return ans
 
@@ -362,6 +362,6 @@ def clone_and_find(nodes):
 
 
 if __name__ == '__main__':
-    print( "Running doctest" )
+    print("Running doctest")
     import doctest
     doctest.testmod()
