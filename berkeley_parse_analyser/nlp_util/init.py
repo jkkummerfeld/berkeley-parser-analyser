@@ -24,7 +24,7 @@ def header(args, out=sys.stdout):
     head_text += "\n#"
     if isinstance(out, file_types):
         print(head_text, file=out)
-    elif isinstance(out, (list,)):
+    elif isinstance(out, list):
         for outfile in out:
             print(head_text, file=outfile)
     else:

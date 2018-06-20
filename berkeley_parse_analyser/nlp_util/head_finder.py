@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 '''Identifies the word that is the lexical head of each non-terminal in a parse'''
-
+from __future__ import print_function
 import sys
 
 COLLINS_MAPPING_TABLE = {

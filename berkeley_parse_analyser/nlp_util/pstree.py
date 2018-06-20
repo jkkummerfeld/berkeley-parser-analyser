@@ -333,7 +333,7 @@ def clone_and_find(nodes):
     '''Clone the tree these nodes are in and finds the equivalent nodes in the
     new tree.'''
     return_list = True
-    if not isinstance(nodes, (list,)):
+    if not isinstance(nodes, list):
         return_list = False
         nodes = [nodes]
 
