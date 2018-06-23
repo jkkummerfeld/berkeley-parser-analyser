@@ -55,7 +55,6 @@ def get_errors(test, gold, include_terminals=False):
                             ans.append(('diff POS', tnode.span, tnode.label, tnode, gnode.label))
 
     test_spans = [(span.span[0], span.span[1], span) for span in test]
-    # TODO: check that this change make sense
     test_spans.sort(key=lambda x: (x[0], x[1]))
     test_span_set = {}
     to_remove = []
@@ -71,7 +70,6 @@ def get_errors(test, gold, include_terminals=False):
         test_spans.remove(span)
 
     gold_spans = [(span.span[0], span.span[1], span) for span in gold]
-    # TODO: check that this change make sense
     gold_spans.sort(key=lambda x: (x[0], x[1]))
     gold_span_set = {}
     to_remove = []

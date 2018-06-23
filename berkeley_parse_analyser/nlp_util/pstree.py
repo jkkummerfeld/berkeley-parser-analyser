@@ -12,7 +12,7 @@ class TreeIterator:
     PSTree uses pre-order traversal by default, but this supports post-order too, e.g.:
     >>> tree = tree_from_text("(ROOT (S (NP-SBJ (NNP Ms.) (NNP Haag) ) (VP (VBZ plays) (NP (NNP Elianti) )) (. .) ))")
     >>> for node in TreeIterator(tree, 'post'):
-    ...   print( node )
+    ...   print(node)
     (NNP Ms.)
     (NNP Haag)
     (NP-SBJ (NNP Ms.) (NNP Haag))
