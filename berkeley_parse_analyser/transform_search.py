@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
+from __future__ import print_function
 import sys
 from nlp_util import pstree, render_tree, init, treebanks, parse_errors, head_finder, tree_transform
 from collections import defaultdict
-from StringIO import StringIO
+from functools import reduce
+try:
+	from StringIO import StringIO
+except ImportError:
+	from io import StringIO
 
 def get_label(tree):
 	if tree.word is None:
@@ -197,8 +202,8 @@ def successors(ctree, cerrors, gold):
 	# Move nodes
 	for source_span in ctree:
 		# Consider all continuous sets of children
-		for left in xrange(len(source_span.subtrees)):
-			for right in xrange(left, len(source_span.subtrees)):
+		for left in range(len(source_span.subtrees)):
+			for right in range(left, len(source_span.subtrees)):
 				if left == 0 and right == len(source_span.subtrees) - 1:
 					# Note, this means in cases like (NP (NN blah)) we can't move the NN
 					# out, we have to move the NP level.
@@ -298,25 +303,25 @@ def compare_trees(gold_tree, test_tree, out_dict, error_counts, classify):
 	""" Compares two trees. """
 	init_errors = parse_errors.get_errors(test_tree, gold_tree)
 	error_count = len(init_errors)
-	print >> out_dict['out'], "{} Initial errors".format(error_count)
+	print("{} Initial errors".format(error_count), file=out_dict['out'])
 	iters, path = greedy_search(gold_tree, test_tree, classify)
-	print >> out_dict['out'], "{} on fringe, {} iterations".format(*iters)
+	print("{} on fringe, {} iterations".format(*iters), file=out_dict['out'])
 	if path is not None:
-		print >> out_dict['test_trees'], test_tree
-		print >> out_dict['gold_trees'], gold_tree
+		print(test_tree, file=out_dict['test_trees'])
+		print(gold_tree, file=out_dict['gold_trees'])
 		for tree in path[1:]:
-			print >> out_dict['out'], "{} Error:{}".format(str(tree[2]),tree[1]['classified_type'])
+			print("{} Error:{}".format(str(tree[2]),tree[1]['classified_type']), file=out_dict['out'])
 
 		if len(path) > 1:
 			for tree in path:
-				print >> out_dict['out'], "Step:{}".format(tree[1]['classified_type'])
+				print("Step:{}".format(tree[1]['classified_type']), file=out_dict['out'])
 				error_counts[tree[1]['classified_type']].append(tree[2])
-				print >> out_dict['out'], tree[1]
-				print >> out_dict['out'], render_tree.text_coloured_errors(tree[0], gold=gold_tree).strip()
+				print(tree[1], file=out_dict['out'])
+				print(render_tree.text_coloured_errors(tree[0], gold=gold_tree).strip(), file=out_dict['out'])
 	else:
-		print >> out_dict['out'], "no path found"
-	print >> out_dict['err'], ""
-	print >> out_dict['out'], ""
+		print("no path found", file=out_dict['out'])
+	print("", file=out_dict['err'])
+	print("", file=out_dict['out'])
 
 
 def read_tree(text, out_dict, label):
@@ -330,9 +335,9 @@ def read_tree(text, out_dict, label):
 	tree = treebanks.apply_collins_rules(complete_tree)
 	if tree is None:
 		for out in [out_dict['out'], out_dict['err']]:
-			print >> out, "Empty {} tree".format(label)
-			print >> out, complete_tree
-			print >> out, tree
+			print("Empty {} tree".format(label), file=out)
+			print(complete_tree, file=out)
+			print(tree, file=out)
 	return tree
 
 
@@ -344,29 +349,29 @@ def compare(gold_text, test_text, out_dict, error_counts, classify):
 	gold_text = gold_text.strip()
 	test_text = test_text.strip()
 	if len(gold_text) == 0:
-		print >> out_dict['out'], "No gold tree"
-		print >> out_dict['err'], "No gold tree"
+		print("No gold tree", file=out_dict['out'])
+		print("No gold tree", file=out_dict['err'])
 		return
 	elif len(test_text) == 0:
-		print >> out_dict['out'], "Not parsed"
-		print >> out_dict['err'], "Not parsed"
+		print("Not parsed", file=out_dict['out'])
+		print("Not parsed", file=out_dict['err'])
 		return
 	gold_tree = read_tree(gold_text, out_dict, 'gold')
 	test_tree = read_tree(test_text, out_dict, 'test')
 	if gold_tree is None or test_tree is None:
-		print >> out_dict['out'], "Not parsed, but had output"
-		print >> out_dict['err'], "Not parsed, but had output"
-		print >> out_dict['init_errors'], "Not parsed, but had output"
+		print("Not parsed, but had output", file=out_dict['out'])
+		print("Not parsed, but had output", file=out_dict['err'])
+		print("Not parsed, but had output", file=out_dict['init_errors'])
 		return
-	print >> out_dict['init_errors'], render_tree.text_coloured_errors(test_tree, gold_tree).strip()
+	print(render_tree.text_coloured_errors(test_tree, gold_tree).strip(), file=out_dict['init_errors'])
 
 	gold_words = gold_tree.word_yield()
 	test_words = test_tree.word_yield()
 	if len(test_words.split()) != len(gold_words.split()):
 		for out in [out_dict['out'], out_dict['err']]:
-			print >> out, "Sentence lengths do not match..."
-			print >> out, "Gold: " + gold_words
-			print >> out, "Test: " + test_words
+			print("Sentence lengths do not match...", file=out)
+			print("Gold: " + gold_words, file=out)
+			print("Test: " + test_words, file=out)
 		return
 
 	compare_trees(gold_tree, test_tree, out_dict, error_counts, classify)
@@ -390,11 +395,11 @@ def main(args, classify):
 	out_dict['test_trees'] = open(prefix + '.test_trees', 'w')
 	out_dict['error_counts'] = open(prefix + '.error_counts', 'w')
 	out_dict['init_errors'] = open(prefix + '.init_errors', 'w')
-	init.header(args, out_dict.values())
+	init.header(args, list(out_dict.values()))
 
 	# Classification
-	print >> out_dict['out'], "Printing tree transformations"
-	print >> out_dict['err'], "Printing tree transformations"
+	print("Printing tree transformations", file=out_dict['out'])
+	print("Printing tree transformations", file=out_dict['err'])
 	gold_in = open(args[1])
 	test_in = sys.stdin if args[2] == '-' else open(args[2])
 	sent_no = 0
@@ -404,20 +409,20 @@ def main(args, classify):
 		gold_text = gold_in.readline()
 		test_text = test_in.readline()
 		if gold_text == '' and test_text == '':
-			print >> out_dict['err'], "End of both input files"
+			print("End of both input files", file=out_dict['err'])
 			break
 		elif gold_text == '':
-			print >> out_dict['err'], "End of gold input"
+			print("End of gold input", file=out_dict['err'])
 			break
 		elif test_text == '':
-			print >> out_dict['err'], "End of test input"
+			print("End of test input", file=out_dict['err'])
 			break
 
-		print >> out_dict['out'], "Sentence {}:".format(sent_no)
-		print >> out_dict['err'], "Sentence {}:".format(sent_no)
-		print >> out_dict['init_errors'], "Sentence {}:".format(sent_no)
+		print("Sentence {}:".format(sent_no), file=out_dict['out'])
+		print("Sentence {}:".format(sent_no), file=out_dict['err'])
+		print("Sentence {}:".format(sent_no), file=out_dict['init_errors'])
 		compare(gold_text.strip(), test_text.strip(), out_dict, error_counts, classify)
-		print >> out_dict['init_errors'], "\n"
+		print("\n", file=out_dict['init_errors'])
 
 	# Results
 	counts_to_print = []
@@ -427,7 +432,7 @@ def main(args, classify):
 		counts_to_print.append((len(error_counts[error]), sum(error_counts[error]), error))
 	counts_to_print.sort(reverse=True)
 	for error in counts_to_print:
-		print >> out_dict['error_counts'], "{} {} {}".format(*error)
+		print("{} {} {}".format(*error), file=out_dict['error_counts'])
 
 
 if __name__ == '__main__':

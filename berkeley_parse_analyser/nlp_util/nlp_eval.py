@@ -35,6 +35,6 @@ def calc_prf(match, gold, test):
         return 0.0, 0.0, 0.0
 
 if __name__ == "__main__":
-    print "Running doctest"
+    print("Running doctest")
     import doctest
     doctest.testmod()
