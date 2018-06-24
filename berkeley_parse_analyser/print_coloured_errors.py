@@ -18,7 +18,7 @@ def mprint(text, out_dict, out_name):
 		for key in out_dict:
 			print(text, file=out_dict[key])
 	else:
-		print(text, out_dict[out_name])
+		print(text, file=out_dict[out_name])
 
 
 if __name__ == '__main__':
