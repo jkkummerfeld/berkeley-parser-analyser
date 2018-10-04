@@ -1,1 +1,5 @@
 theme: jekyll-theme-cayman
+title: Berkeley Parser Analyser
+description: Classify errors in the output of syntactic constituency parsers.
+show_downloads: true
+google_analytics: UA-19179423-2
