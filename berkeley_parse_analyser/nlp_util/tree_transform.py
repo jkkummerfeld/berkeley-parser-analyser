@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
-import pstree
+from .pstree import clone_and_find, PSTree
 
 def change_label_by_node(node, new_label, in_place):
     if not in_place:
-        node = pstree.clone_and_find(node)
+        node = clone_and_find(node)
     node.label = new_label
     return (True, (node.root(), node))
 
@@ -39,7 +39,7 @@ def add_node(tree, span, label, position=0, in_place=True):
     # Do not operate on the root node
     if nodes[0].parent is None:
         nodes = nodes[0].subtrees[:]
-    for i in xrange(position):
+    for i in range(position):
         if len(nodes) > 1:
             return (False, "Position {} is too deep".format(position))
         nodes[0] = nodes[0].subtrees[0]
@@ -54,7 +54,7 @@ def add_node(tree, span, label, position=0, in_place=True):
             return (False, "The span ({} - {}) would cross brackets".format(*span))
 
     # Create the node
-    nnode = pstree.PSTree(None, label, span, parent)
+    nnode = PSTree(None, label, span, parent)
     position = parent.subtrees.index(nodes[0])
     parent.subtrees.insert(position, nnode)
 
@@ -69,7 +69,7 @@ def add_node(tree, span, label, position=0, in_place=True):
 
 def remove_node_by_node(node, in_place):
     if not in_place:
-        node = pstree.clone_and_find(node)
+        node = clone_and_find(node)
     parent = node.parent
     position = parent.subtrees.index(node)
     init_position = position
@@ -103,7 +103,7 @@ def remove_node(tree, span=None, label=None, position=None, in_place=True):
 
 def move_nodes(nodes, new_parent, in_place=True, remove_empty=True, remove_trivial_unary=True):
     if not in_place:
-        nodes = pstree.clone_and_find(nodes + [new_parent])
+        nodes = clone_and_find(nodes + [new_parent])
         new_parent = nodes[-1]
         nodes = nodes[:-1]
 

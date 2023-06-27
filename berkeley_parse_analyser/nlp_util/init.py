@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
@@ -15,25 +15,26 @@ def header(args, out=sys.stdout):
     head_text += "\n# Command:\n# "
     head_text += ' '.join(args)
     head_text += "\n#"
-    if isinstance(out, file):
-        print >> out, head_text
-    elif isinstance(out, list):
+    if isinstance(out, list):
         for outfile in out:
-            print >> outfile, head_text
+            print(head_text, file=outfile)
     else:
-        print >> sys.stderr, "Invalid list of output files passed to header"
-        sys.exit(1)
+        print("Need to fix isinstance file", file=sys.stderr)
+    #if isinstance(out, file):
+        print(head_text, file=out)
+        #print("Invalid list of output files passed to header", file=sys.stderr)
+        #sys.exit(1)
 
 def argcheck(argv, minargs, maxargs, desc, arg_desc, further_desc=''):
     if minargs <= len(argv) <= maxargs:
         return
-    print >> sys.stderr, "{}\n  {} {}".format(desc, argv[0], arg_desc)
+    print("{}\n  {} {}".format(desc, argv[0], arg_desc), file=sys.stderr)
     if len(further_desc) > 0:
-        print >> sys.stderr, "\n{}".format(further_desc)
-    print >> sys.stderr, "Expected {} to {} args, got:\n{}".format(minargs - 1, maxargs - 1, ' '.join(argv))
+        print("\n{}".format(further_desc), file=sys.stderr)
+    print("Expected {} to {} args, got:\n{}".format(minargs - 1, maxargs - 1, ' '.join(argv)), file=sys.stderr)
     sys.exit(1)
 
 if __name__ == "__main__":
-    print "Running doctest"
+    print("Running doctest")
     import doctest
     doctest.testmod()

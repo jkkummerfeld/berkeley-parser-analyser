@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
@@ -55,7 +55,7 @@ def get_errors(test, gold, include_terminals=False):
                             ans.append(('diff POS', tnode.span, tnode.label, tnode, gnode.label))
 
     test_spans = [(span.span[0], span.span[1], span) for span in test]
-    test_spans.sort()
+    test_spans.sort(key=lambda x: x[:2])
     test_span_set = {}
     to_remove = []
     for span in test_spans:
@@ -70,7 +70,7 @@ def get_errors(test, gold, include_terminals=False):
         test_spans.remove(span)
 
     gold_spans = [(span.span[0], span.span[1], span) for span in gold]
-    gold_spans.sort()
+    gold_spans.sort(key=lambda x: x[:2])
     gold_span_set = {}
     to_remove = []
     for span in gold_spans:
@@ -133,4 +133,4 @@ def counts_for_prf(test, gold, include_root=False, include_terminals=False):
     return match, gcount, tcount, len(errors.crossing), len(errors.POS)
 
 if __name__ == '__main__':
-    print "No unit testing implemented for Error_Set"
+    print("No unit testing implemented for Error_Set")
